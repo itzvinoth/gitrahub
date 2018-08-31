@@ -23,6 +23,9 @@ Incase you want to find the individual starred repos of particular user you can 
 # ![input field](gitrahub-3.png)
 # ![input field](gitrahub-4.png)
 
+## Some Constraints 
+
+GitHub limits unauthenticated API requests to 60 per hour but after binding your access token you will be able to enjoy the rate limit of 5,000 requests per hour.
 
 ## Installation
 
