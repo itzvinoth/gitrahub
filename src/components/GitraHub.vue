@@ -456,7 +456,6 @@ export default {
               }
             })
             this.showSpinner = false
-            // window.alert("done nigga ausary kandaroli")
           }
         }.bind(this)
 
