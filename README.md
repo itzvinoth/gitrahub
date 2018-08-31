@@ -1,6 +1,6 @@
 # Gitrahub
 
-> A Github based project. `Gitrahub` stands for 'Git Intra Hub'. Main goal of gitrahub is you can easily find the sharred interest between two users. 
+> A Github based project. `Gitrahub` stands for 'Git Intra Hub'. Main goal of gitrahub is you can easily find the sharred interest between two users. Follow the below steps and run it locally. 
 
 
 
