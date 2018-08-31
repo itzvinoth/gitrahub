@@ -5,7 +5,7 @@
 
 ## Aim 
 
-Aim of the project is to simply find users starred repos with minimal effort. This is in such a beginning stage. 
+
 
 ## Demo
 
