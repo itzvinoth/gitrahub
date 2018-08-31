@@ -3,9 +3,6 @@
 > A Github based project. 
 
 
-## Aim 
-
-
 
 ## Demo
 
