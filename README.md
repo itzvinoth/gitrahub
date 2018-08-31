@@ -27,6 +27,23 @@ Incase you want to find the individual starred repos of particular user you can 
 
 GitHub limits unauthenticated API requests to 60 per hour but after binding your access token you will be able to enjoy the rate limit of 5,000 requests per hour.
 
+How should I bind my access token?
+
+Go to `Gitrahub.vue` file find this lines. 
+```javascript
+// replace below sample access token with your own github access token.
+let config = {
+   headers: {'Authorization': 'token 5f55b5000330c1a56e328efe84gh4b6499b8219b'}
+}
+// use these lines 
+  axios.get('https://api.github.com/users/'+userOne+'/starred?page='+countOne+'&per_page=100', config)
+  axios.get('https://api.github.com/users/'+userTwo+'/starred?page='+countTwo+'&per_page=100', config)
+  
+// instead of these  
+  axios.get('https://api.github.com/users/'+userOne+'/starred?page='+countOne+'&per_page=100')
+  axios.get('https://api.github.com/users/'+userTwo+'/starred?page='+countTwo+'&per_page=100')
+```
+
 ## Installation
 
 ``` bash
