@@ -8,6 +8,22 @@
 
 ![Live Demo](https://i.imgur.com/95xE6Pr.gif)
 
+## How it works
+
+You can either provide github profile url or username in the respective input fields like in the below image. In this case i gave profile url to the first input field and profile name to the second input field.
+
+# ![input field](gitrahub-1.png)
+
+So after clicking the `Get starred repos` button you will get the mutual starred repos of the two users.
+
+# ![input field](gitrahub-2.png)
+
+Incase you want to find the individual starred repos of particular user you can select areas in the venn diagram like below images. So Let's start play with gitrahub.
+
+# ![input field](gitrahub-3.png)
+# ![input field](gitrahub-4.png)
+
+
 ## Installation
 
 ``` bash
