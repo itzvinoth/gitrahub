@@ -29,14 +29,12 @@
         </div>
         <div class="col-6 float-left border p-6">
           <dl class="form-group errored">
-            <dt><label for="example-text">User One</label></dt>
             <dd><input class="form-control" type="text" v-model="inputone" placeholder="Enter github User Name or profile URL.."></dd>
             <dd class="error" id="form-error-text" v-if="errorMessageFieldOne !== ''"> {{ errorMessageFieldOne }} </dd>
           </dl>
         </div>
         <div class="col-6 float-left border p-6">
           <dl class="form-group errored">
-            <dt><label for="example-text">User Two</label></dt>
             <dd><input class="form-control" type="text" v-model="inputtwo" placeholder="Enter github User Name or profile URL.."></dd>
             <dd class="error" id="form-error-text" v-if="errorMessageFieldTwo !== ''"> {{ errorMessageFieldTwo }} </dd>
           </dl>
@@ -223,8 +221,8 @@ export default {
     // define sets and set set intersections
     let width = 700, height = 250
     let circleData = [
-      { 'cx': 300, 'cy': 120, 'id': 'cir1' ,'radius': 80, 'color' : '#7bc96f', 'name' : 'user1', 'align' : 'end' },
-      { 'cx': 400, 'cy': 120, 'id': 'cir2' ,'radius': 80, 'color' : '#7bc96f', 'name' : 'user2', 'align' : 'start' }]
+      { 'cx': 300, 'cy': 120, 'id': 'cir1' ,'radius': 80, 'color' : '#7bc96f', 'align' : 'end' },
+      { 'cx': 400, 'cy': 120, 'id': 'cir2' ,'radius': 80, 'color' : '#7bc96f', 'align' : 'start' }]
     
     var svgContainer = d3.select('#venn').append('svg')
         .attr('width', width)
@@ -263,7 +261,7 @@ export default {
                  .text( function (d) { return d.name; })
                  .attr('text-anchor', function (d) { return d.align; })  
                  .attr('font-family', 'sans-serif')
-                 .attr('font-size', '20px')
+                 .attr('font-size', '15px')
                  .attr('fill', '#FFF')
 
     let x1 = circleData[0]['cx']
@@ -337,6 +335,10 @@ export default {
         userTwo = this.inputtwo.split('/')[3]
       else
         userTwo = this.inputtwo
+      let userDetails = []
+      userDetails[0] = (userOne.length > 9) ? userOne.slice(0, 7).concat('..') : userOne
+      userDetails[1] = (userTwo.length > 9) ? userTwo.slice(0, 7).concat('..') : userTwo
+      d3.select('#venn').selectAll('text').text(function (d, i) { return userDetails[i] })
       if (userOne !== '' && userTwo !== '') {
         if (this.mutualStarred.length > 0) {
           this.mutualStarred = []
@@ -352,6 +354,7 @@ export default {
         let countOne = 1
         let countTwo = 1
 
+        // replace below access token with your github access token..
         // let config = {
         //   headers: {'Authorization': 'token 5f55b5000330c1a56e328efe84gh4b6499b8219b'}
         // }
@@ -361,6 +364,8 @@ export default {
         let flagOneFinished = false
         let flagTwoFinished = false
 
+        // use access 
+        // axios.get('https://api.github.com/users/'+userOne+'/starred?page='+countOne+'&per_page=100', config)
         const collectUserOnestars = () => {
           Promise.all([
             axios.get('https://api.github.com/users/'+userOne+'/starred?page='+countOne+'&per_page=100')
