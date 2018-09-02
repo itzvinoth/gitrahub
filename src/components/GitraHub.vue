@@ -20,7 +20,12 @@
         </div>
       </div>
     </div> -->
-
+    <div>
+      <octicon name="mark-github" height="48" width="48" color="#95aebb"></octicon>
+      <div class="mb-2">
+        <p class="h1" style="color: #95aebb">GitraHub</p>
+      </div>
+    </div>
     <form>
 
       <div class="container-lg clearfix">
@@ -123,6 +128,7 @@ import 'vue-octicon/icons/star'
 import 'vue-octicon/icons/check'
 import 'vue-octicon/icons/x'
 import 'vue-octicon/icons/info'
+import 'vue-octicon/icons/mark-github'
 import { intersection } from '../assets/js/intersection'
 import * as d3 from 'd3'
 // Generate github tokens under this URL. Once you landed the page create your 
