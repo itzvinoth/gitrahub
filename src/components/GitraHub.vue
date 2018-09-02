@@ -23,24 +23,24 @@
     <div>
       <octicon name="mark-github" height="48" width="48" color="#95aebb"></octicon>
       <div class="mb-2">
-        <p class="h1" style="color: #95aebb">GitraHub</p>
+        <p class="h1"><span style="color: #95aebb">Git</span><span style="color: #1775d0">ra</span><span style="color: #95aebb">hub</span></p>
       </div>
     </div>
     <form>
 
       <div class="container-lg clearfix">
         <div class="flash">
-          You can find mutual starred repos or find unique starred of any user by excluding mutual starred repos or find all starred repos of both users by providing the github user name or profile url in the input field.
+          Find starred repos between two users.
         </div>
         <div class="col-6 float-left border p-6">
           <dl class="form-group errored">
-            <dd><input class="form-control" type="text" v-model="inputone" placeholder="Enter github User Name or profile URL.."></dd>
+            <dd><input class="form-control" type="text" v-model="inputone" placeholder="Enter github username or profile URL"></dd>
             <dd class="error" id="form-error-text" v-if="errorMessageFieldOne !== ''"> {{ errorMessageFieldOne }} </dd>
           </dl>
         </div>
         <div class="col-6 float-left border p-6">
           <dl class="form-group errored">
-            <dd><input class="form-control" type="text" v-model="inputtwo" placeholder="Enter github User Name or profile URL.."></dd>
+            <dd><input class="form-control" type="text" v-model="inputtwo" placeholder="Enter github username or profile URL"></dd>
             <dd class="error" id="form-error-text" v-if="errorMessageFieldTwo !== ''"> {{ errorMessageFieldTwo }} </dd>
           </dl>
         </div>
@@ -91,7 +91,7 @@
         </div>
       </div>
       <div v-for="(star, index) in starsResult" class="col-4 float-left p-2" :key="index">
-        <span class="tooltipped tooltipped-multiline tooltipped-ne tooltipped-align-left-1 border p-2 mb-2 mr-2 float-left" :aria-label="`${star.name}:  ${(star.description !== null) ? star.description : 'No Descriptions, Sorry'}`">
+        <span class="tooltipped tooltipped-multiline tooltipped-ne tooltipped-align-left-1 p-2 mb-2 mr-2 float-left" :aria-label="`${star.name}:  ${(star.description !== null) ? star.description : 'No Descriptions, Sorry'}`">
           <octicon name="info"></octicon>
         </span> 
        <div class="Box">
