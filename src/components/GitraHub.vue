@@ -55,12 +55,38 @@
       <vue-simple-spinner v-if="starsResult !== undefined && starsResult.length <= 0 && showSpinner" line-fg-color="#7bc96f"></vue-simple-spinner>
       <div id="venn" v-show="(starsResult !== undefined && starsResult.length > 0 || mutualStarred.length > 0 || userOneUniqueStarred.length > 0 || userTwoUniqueStarred.length > 0)"></div>
       <div class="container-lg clearfix" v-if="(starsResult !== undefined && starsResult.length > 0 || mutualStarred.length > 0 || userOneUniqueStarred.length > 0 || userTwoUniqueStarred.length > 0)">
-        <div class="col-4 float-left p-4">
+        <div class="col-3 float-left p-4">
         </div>
-        <div class="col-4 float-left p-4">
+        <div class="col-3 float-left p-4">
           <input class="form-control" v-model="searchRepos" style="width: 100%" type="text" placeholder="Search starred repositories..">
         </div>
-        <div class="col-4 float-left p-4">
+        <div class="col-3 float-left p-4">
+          <div class="select-menu js-menu-container js-select-menu">
+            <button class="btn select-menu-button js-menu-target" type="button" aria-haspopup="true" aria-expanded="false" style="width: 100%">
+              Sort: {{ sortRepos }}
+            </button>
+            <div class="select-menu-modal-holder">
+              <div class="select-menu-modal js-menu-content">
+                <div class="select-menu-header js-navigation-enable" tabindex="-1">
+                  <button class="btn-link close-button js-menu-close" type="button"><octicon name="x" aria-label="Close menu"></octicon></button>
+                  <span class="select-menu-title">Sort options:</span>
+                </div>
+                <div class="select-menu-list js-navigation-container">
+                  <a @click="selectSort('Default')" href="#url" class="select-menu-item selected js-navigation-item">
+                    <span class="select-menu-item-text js-select-button-text">Default</span>
+                  </a>
+                  <a @click="selectSort('Most stars')" href="#url" class="select-menu-item selected js-navigation-item">
+                    <span class="select-menu-item-text js-select-button-text">Most stars</span>
+                  </a>
+                  <a @click="selectSort('Least stars')" href="#url" class="select-menu-item selected js-navigation-item">
+                    <span class="select-menu-item-text js-select-button-text">Least stars</span>
+                  </a>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="col-3 float-left p-4">
           <div class="select-menu js-menu-container js-select-menu">
             <button class="btn select-menu-button js-menu-target" type="button" aria-haspopup="true" aria-expanded="false">
               Language: {{ (selectedLanguage == '') ? 'All languages' : selectedLanguage }}
@@ -77,7 +103,6 @@
                     <span class="select-menu-item-text js-select-button-text">All languages</span>
                   </a>
                   <a v-for="(lang, index) in uniqueLanguages" :key="index" @click="selectLang(lang)" href="#" class="select-menu-item selected js-navigation-item">
-                    <!-- <octicon name="check" class="select-menu-item-icon"></octicon> -->
                     <span class="select-menu-item-text js-select-button-text">{{lang}}</span>
                   </a>
                   <!-- <a href="#url" class="select-menu-item selected js-navigation-item">
@@ -158,6 +183,7 @@ export default {
       rightSetPortion: false,
       uniqueLanguages: [],
       selectedLanguage: '',
+      sortRepos: 'Default',
       searchRepos: ''
     }
   },
@@ -179,15 +205,15 @@ export default {
         obj = { 'arr': mutualStarred, 'key': 'center' }
         starList.push(obj)
       }
-      if (this.leftSetPortion == false) {
+      if (this.leftSetPortion === false) {
         if (starList.map(val => val.key).indexOf('left') !== -1)
           starList.splice(starList.map(val => val.key).indexOf('left'), 1)
       }
-      if (this.rightSetPortion == false) {
+      if (this.rightSetPortion === false) {
         if (starList.map(val => val.key).indexOf('right') !== -1)
           starList.splice(starList.map(val => val.key).indexOf('right'), 1)
       }
-      if (this.intersectionPortion == false) {
+      if (this.intersectionPortion === false) {
         if (starList.map(val => val.key).indexOf('center') !== -1)
           starList.splice(starList.map(val => val.key).indexOf('center'), 1)
       }
@@ -196,6 +222,17 @@ export default {
       }
       
       let result = Array.prototype.concat.apply([], finalStarList)
+      if (this.sortRepos !== 'Default') {
+        if (this.sortRepos === 'Most stars') {
+          result = result.slice().sort(function (a, b) {
+            return b.gazerscount - a.gazerscount
+          })
+        } else {
+          result = result.slice().sort(function (a, b) {
+            return a.gazerscount - b.gazerscount
+          })
+        }
+      }
       if (this.searchRepos !== '') {
         result.map((res) => {
           if (res.name.indexOf(this.searchRepos) !== -1) {
@@ -292,6 +329,10 @@ export default {
       .style('fill', '#239a3b').on('click', this.selectIntersection)
   },
   methods: {
+    selectSort (sort) {
+      this.sortRepos = sort
+      this.searchRepos = ''
+    },
     selectLang (lang) {
       this.selectedLanguage = lang
       this.searchRepos = ''
@@ -364,7 +405,6 @@ export default {
         // let config = {
         //   headers: {'Authorization': 'token 5f55b5000330c1a56e328efe84gh4b6499b8219b'}
         // }
-        // assumed the github user who starred less than 50,000 repos...
         let userOneStarredRepos = []
         let userTwoStarredRepos = []
         let flagOneFinished = false
