@@ -249,7 +249,7 @@ export default {
       if (this.selectedLanguage !== '') {
         let filteredRepos = []
         result.map((res) => {
-          if (res.language !== null && res.language.indexOf(this.selectedLanguage) !== -1) {
+          if (res.language !== null && res.language === this.selectedLanguage) {
             filteredRepos.push(res)
           }
         })
