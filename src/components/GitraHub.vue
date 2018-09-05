@@ -72,13 +72,13 @@
                   <span class="select-menu-title">Sort options:</span>
                 </div>
                 <div class="select-menu-list js-navigation-container">
-                  <a @click="selectSort('Default')" href="#url" class="select-menu-item selected js-navigation-item">
+                  <a @click.prevent.stop="selectSort('Default')" class="select-menu-item selected js-navigation-item">
                     <span class="select-menu-item-text js-select-button-text">Default</span>
                   </a>
-                  <a @click="selectSort('Most stars')" href="#url" class="select-menu-item selected js-navigation-item">
+                  <a @click.prevent.stop="selectSort('Most stars')" class="select-menu-item selected js-navigation-item">
                     <span class="select-menu-item-text js-select-button-text">Most stars</span>
                   </a>
-                  <a @click="selectSort('Least stars')" href="#url" class="select-menu-item selected js-navigation-item">
+                  <a @click.prevent.stop="selectSort('Least stars')" class="select-menu-item selected js-navigation-item">
                     <span class="select-menu-item-text js-select-button-text">Least stars</span>
                   </a>
                 </div>
@@ -98,11 +98,11 @@
                   <span class="select-menu-title">Select language:</span>
                 </div>
                 <div class="select-menu-list js-navigation-container">
-                  <a @click="selectLang('')" href="#" class="select-menu-item selected js-navigation-item">
+                  <a @click.prevent="selectLang('')" class="select-menu-item selected js-navigation-item">
                     <!-- <octicon name="check" class="select-menu-item-icon"></octicon> -->
                     <span class="select-menu-item-text js-select-button-text">All languages</span>
                   </a>
-                  <a v-for="(lang, index) in uniqueLanguages" :key="index" @click="selectLang(lang)" href="#" class="select-menu-item selected js-navigation-item">
+                  <a v-for="(lang, index) in uniqueLanguages" :key="index" @click.prevent="selectLang(lang)" class="select-menu-item selected js-navigation-item">
                     <span class="select-menu-item-text js-select-button-text">{{lang}}</span>
                   </a>
                   <!-- <a href="#url" class="select-menu-item selected js-navigation-item">
