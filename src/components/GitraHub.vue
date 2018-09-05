@@ -129,11 +129,8 @@
             </div>
             <!-- <div class="Subhead-actions"><a target='_blank' :href="`${star.htmlurl}`" class="btn btn-sm btn-primary" role="button">Link</a></div> -->
             <div class="clearfix">
-              <a class="btn btn-sm btn-with-count" href="#url" role="button">
+              <a class="btn btn-sm" target='_blank' :href="`${star.htmlurl}`" role="button">
                 <octicon name="star"></octicon> {{ star.gazerscount }}
-              </a>
-              <a class="social-count" target='_blank' :href="`${star.htmlurl}`">
-                <octicon name="link-external"></octicon>
               </a>
             </div>
           </div>
