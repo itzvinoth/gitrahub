@@ -202,6 +202,7 @@ export default {
         obj = { 'arr': mutualStarred, 'key': 'center' }
         starList.push(obj)
       }
+      
       if (this.leftSetPortion === false) {
         if (starList.map(val => val.key).indexOf('left') !== -1)
           starList.splice(starList.map(val => val.key).indexOf('left'), 1)
@@ -214,6 +215,7 @@ export default {
         if (starList.map(val => val.key).indexOf('center') !== -1)
           starList.splice(starList.map(val => val.key).indexOf('center'), 1)
       }
+
       for (let i in starList) {
         finalStarList.push(starList[i].arr)
       }
@@ -334,24 +336,20 @@ export default {
       this.selectedLanguage = lang
       this.searchRepos = ''
     },
-    selectCircle (d) {
-      //  rgb(35, 154, 59)
-      if (d3.select('#'+d.id).style('fill') == 'rgb(123, 201, 111)') {
-        // if not already selected color...
-        if (d.cx == 300) {
-          this.leftSetPortion = true
-        } else {
-          this.rightSetPortion = true
-        }
-        d3.select('#'+d.id).style('fill', '#239a3b')
+    circleSelection (d, setPortion, setFillColor) {
+      if (d.cx == 300) {
+        this.leftSetPortion = setPortion
       } else {
-        if (d.cx == 300) {
-          this.leftSetPortion = false
-        } else {
-          this.rightSetPortion = false
-        }
-        d3.select('#'+d.id).style('fill', '#7bc96f')
+        this.rightSetPortion = setPortion
       }
+      d3.select('#'+d.id).style('fill', setFillColor)
+    },
+    selectCircle (d) {
+      // rgb(35, 154, 59)
+      let isCircleSelected = (d3.select('#'+d.id).style('fill') == 'rgb(123, 201, 111)')
+      let setPortion = isCircleSelected ? true : false
+      let setFillColor = isCircleSelected ? '#239a3b' : '#7bc96f'
+      this.circleSelection(d, setPortion, setFillColor)
       this.uniqueLanguages = []
       this.selectedLanguage = ''
       this.searchRepos = ''
@@ -371,14 +369,9 @@ export default {
     },
     fetchReposStarred (msg, event) {
       let userOne, userTwo
-      if (this.inputone.indexOf('https://github.com/') !== -1 || this.inputone.indexOf('https://www.github.com/') !== -1) 
-        userOne = this.inputone.split('/')[3]
-      else
-        userOne = this.inputone
-      if (this.inputtwo.indexOf('https://github.com/') !== -1 || this.inputtwo.indexOf('https://www.github.com/') !== -1) 
-        userTwo = this.inputtwo.split('/')[3]
-      else
-        userTwo = this.inputtwo
+      userOne = (this.inputone.split('/').length > 2) ? this.inputone.split('/')[3] : this.inputone
+      userTwo = (this.inputtwo.split('/').length > 2) ? this.inputtwo.split('/')[3] : this.inputtwo
+      
       let userDetails = []
       userDetails[0] = (userOne.length > 9) ? userOne.slice(0, 7).concat('..') : userOne
       userDetails[1] = (userTwo.length > 9) ? userTwo.slice(0, 7).concat('..') : userTwo
