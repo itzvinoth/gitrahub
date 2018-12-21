@@ -57,7 +57,7 @@
             <!-- <a href="#" class="UnderlineNav-item">Stars
               <span class="Counter">135</span>
             </a> -->
-            <a href="#" class="UnderlineNav-item" :class="{'selected': (index === tabSelectionIndex)}" v-for="(item, index) in items" :key="index" @click="tabSelect(index)">{{ item.message }}
+            <a href="#" class="UnderlineNav-item" :class="{'selected': (index === tabSelectionIndex)}" v-for="(item, index) in items" :key="index" @click="onTabSelect(index)">{{ item.message }}
             </a>
           </div>
         </div>
@@ -84,13 +84,13 @@
                   <span class="select-menu-title">Sort options:</span>
                 </div>
                 <div class="select-menu-list js-navigation-container">
-                  <a @click.prevent.stop="selectSort('Default')" class="select-menu-item selected js-navigation-item">
+                  <a @click.prevent.stop="onSelectSort('Default')" class="select-menu-item selected js-navigation-item">
                     <span class="select-menu-item-text js-select-button-text">Default</span>
                   </a>
-                  <a @click.prevent.stop="selectSort('Most stars')" class="select-menu-item selected js-navigation-item">
+                  <a @click.prevent.stop="onSelectSort('Most stars')" class="select-menu-item selected js-navigation-item">
                     <span class="select-menu-item-text js-select-button-text">Most stars</span>
                   </a>
-                  <a @click.prevent.stop="selectSort('Least stars')" class="select-menu-item selected js-navigation-item">
+                  <a @click.prevent.stop="onSelectSort('Least stars')" class="select-menu-item selected js-navigation-item">
                     <span class="select-menu-item-text js-select-button-text">Least stars</span>
                   </a>
                 </div>
@@ -110,11 +110,11 @@
                   <span class="select-menu-title">Select language:</span>
                 </div>
                 <div class="select-menu-list js-navigation-container">
-                  <a @click.prevent="selectLang('')" class="select-menu-item selected js-navigation-item">
+                  <a @click.prevent="onSelectLang('')" class="select-menu-item selected js-navigation-item">
                     <!-- <octicon name="check" class="select-menu-item-icon"></octicon> -->
                     <span class="select-menu-item-text js-select-button-text">All languages</span>
                   </a>
-                  <a v-for="(lang, index) in uniqueLanguages" :key="index" @click.prevent="selectLang(lang)" class="select-menu-item selected js-navigation-item">
+                  <a v-for="(lang, index) in uniqueLanguages" :key="index" @click.prevent="onSelectLang(lang)" class="select-menu-item selected js-navigation-item">
                     <span class="select-menu-item-text js-select-button-text">{{lang}}</span>
                   </a>
                   <!-- <a href="#url" class="select-menu-item selected js-navigation-item">
@@ -171,7 +171,7 @@ import * as d3 from 'd3'
 // https://github.com/settings/tokens
 
 let config = {
-  headers: {'Authorization': 'token bfdedafa6d65f58d981e3636a0da390a878560e3'}
+  headers: {'Authorization': 'token ac80f7ad41745695c27534e8aa829c1cd2a3efce'}
 }
 
 export default {
@@ -218,6 +218,8 @@ export default {
       let userTwoStarred = this.userTwoStarred
       let mutualStarred = this.mutualStarred
       let starList = [], finalStarList=[], searchedRepos=[], obj
+
+      // Based on selecting the 'Venn diagram selection' area the starred repos will be pushed into the star list array
       if (this.leftSetPortion) {
         obj = { 'arr': userOneStarred, 'key': 'left' }
         starList.push(obj)
@@ -231,55 +233,40 @@ export default {
         starList.push(obj)
       }
 
-      if (this.leftSetPortion === false) {
-        if (starList.map(val => val.key).indexOf('left') !== -1)
-          starList.splice(starList.map(val => val.key).indexOf('left'), 1)
+      // Based on unselecting the 'Venn diagram selection' area the starred repos will be popped from the star list array
+      let starListKey = starList.map(val => val.key)
+      if (this.leftSetPortion === false && starListKey.indexOf('left') !== -1) {
+        starList.splice(starListKey.indexOf('left'), 1)
       }
-      if (this.rightSetPortion === false) {
-        if (starList.map(val => val.key).indexOf('right') !== -1)
-          starList.splice(starList.map(val => val.key).indexOf('right'), 1)
+      if (this.rightSetPortion === false && starListKey.indexOf('right') !== -1) {
+        starList.splice(starListKey.indexOf('right'), 1)
       }
-      if (this.intersectionPortion === false) {
-        if (starList.map(val => val.key).indexOf('center') !== -1)
-          starList.splice(starList.map(val => val.key).indexOf('center'), 1)
+      if (this.intersectionPortion === false && starListKey.indexOf('center') !== -1) {
+        starList.splice(starListKey.indexOf('center'), 1)
       }
+
+      // 'finalStarList' contains the final list of starred repos
       for (let i in starList) {
         finalStarList.push(starList[i].arr)
       }
 
       let result = Array.prototype.concat.apply([], finalStarList)
+
       if (this.sortRepos !== 'Default') {
-        if (this.sortRepos === 'Most stars') {
-          result = result.slice().sort(function (a, b) {
-            return b.gazerscount - a.gazerscount
-          })
-        } else {
-          result = result.slice().sort(function (a, b) {
-            return a.gazerscount - b.gazerscount
-          })
-        }
+        this.onSortRepos()
       }
+
       if (this.searchRepos !== '') {
-        result.map((res) => {
-          if (res.name.indexOf(this.searchRepos) !== -1) {
-            searchedRepos.push(res)
-          }
-        })
-        return searchedRepos
+        this.onSearchRepos()
       }
+
       result.forEach((l) => {
         if (this.uniqueLanguages.indexOf(l.language) === -1 && l.language !== null) {
           this.uniqueLanguages.push(l.language)
         }
       })
       if (this.selectedLanguage !== '') {
-        let filteredRepos = []
-        result.map((res) => {
-          if (res.language !== null && res.language === this.selectedLanguage) {
-            filteredRepos.push(res)
-          }
-        })
-        return filteredRepos
+        this.onFilterRepos()
       } else {
         return result
       }
@@ -313,7 +300,7 @@ export default {
                        .on('mouseover', function (d) {
                          d3.select(this).style('cursor', 'pointer')
                        })
-                       .on('click', this.selectCircle)
+                       .on('click', this.onSelectCircle)
     // Add the SVG Text Element to the svgContainer
     var text = svgContainer.selectAll("text")
                         .data(circleData)
@@ -345,21 +332,49 @@ export default {
       .on('mouseover', function (d) {
         d3.select(this).style('cursor', 'pointer')
       })
-      .style('fill', '#239a3b').on('click', this.selectIntersection)
+      .style('fill', '#239a3b').on('click', this.onSelectIntersection)
   },
   methods: {
-    tabSelect (index) {
+    onSortRepos () {
+      if (this.sortRepos === 'Most stars') {
+        result = result.slice().sort(function (a, b) {
+          return b.gazerscount - a.gazerscount
+        })
+      } else {
+        result = result.slice().sort(function (a, b) {
+          return a.gazerscount - b.gazerscount
+        })
+      }
+    },
+    onSearchRepos () {
+      result.map((res) => {
+        if (res.name.indexOf(this.searchRepos) !== -1) {
+          searchedRepos.push(res)
+        }
+      })
+      return searchedRepos
+    },
+    onFilterRepos () {
+      let filteredRepos = []
+        result.map((res) => {
+          if (res.language !== null && res.language === this.selectedLanguage) {
+            filteredRepos.push(res)
+          }
+        })
+        return filteredRepos
+    },
+    onTabSelect (index) {
       this.tabSelectionIndex = index
     },
-    selectSort (sort) {
+    onSelectSort (sort) {
       this.sortRepos = sort
       this.searchRepos = ''
     },
-    selectLang (lang) {
+    onSelectLang (lang) {
       this.selectedLanguage = lang
       this.searchRepos = ''
     },
-    circleSelection (d, setPortion, setFillColor) {
+    onCircleSelection (d, setPortion, setFillColor) {
       if (d.cx == 300) {
         this.leftSetPortion = setPortion
       } else {
@@ -367,17 +382,17 @@ export default {
       }
       d3.select('#'+d.id).style('fill', setFillColor)
     },
-    selectCircle (d) {
+    onSelectCircle (d) {
       // rgb(35, 154, 59)
       let isCircleSelected = (d3.select('#'+d.id).style('fill') == 'rgb(123, 201, 111)')
       let setPortion = isCircleSelected ? true : false
       let setFillColor = isCircleSelected ? '#239a3b' : '#7bc96f'
-      this.circleSelection(d, setPortion, setFillColor)
+      this.onCircleSelection(d, setPortion, setFillColor)
       this.uniqueLanguages = []
       this.selectedLanguage = ''
       this.searchRepos = ''
     },
-    selectIntersection (d) {
+    onSelectIntersection (d) {
       if (d3.select('#intersec').style('fill') == 'rgb(123, 201, 111)') {
         // intersection portion not selected yet..
         this.intersectionPortion = true
