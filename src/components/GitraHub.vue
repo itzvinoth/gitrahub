@@ -23,15 +23,11 @@
     <div>
       <octicon name="mark-github" height="48" width="48" color="#95aebb"></octicon>
       <div class="mb-2">
-        <p class="h1"><span style="color: #95aebb">Git</span><span style="color: #1775d0">ra</span><span style="color: #95aebb">hub</span></p>
+        <!-- <p class="h1"><span style="color: #95aebb">Git</span><span style="color: #1775d0">ra</span><span style="color: #95aebb">hub</span></p> -->
       </div>
     </div>
     <form>
-
       <div class="container-lg clearfix">
-        <div class="flash">
-          Find starred repos between two users.
-        </div>
         <div class="col-6 float-left border p-6">
           <dl class="form-group errored">
             <dd><input class="form-control" type="text" v-model="inputone" placeholder="Enter github username or profile URL"></dd>
@@ -48,13 +44,29 @@
     </form>
     <div class="container-lg clearfix">
       <div class="col-11 m-6">
-        <button @click="fetchReposStarred('msg', $event)" type="submit" class="btn btn-primary">Get starred repos</button>
+        <button @click="fetchReposStarred('msg', $event)" type="submit" class="btn btn-primary">Find shared interest</button>
       </div>
     </div>
+
     <div class="container-lg clearfix">
+
+      <!-- today -->
+      <nav class="UnderlineNav UnderlineNav--full" aria-label="Foo bar">
+        <div class="container-lg UnderlineNav-container">
+          <div class="UnderlineNav-body">
+            <!-- <a href="#" class="UnderlineNav-item">Stars
+              <span class="Counter">135</span>
+            </a> -->
+            <a href="#" class="UnderlineNav-item" :class="{'selected': (index === tabSelectionIndex)}" v-for="(item, index) in items" :key="index" @click="tabSelect(index)">{{ item.message }}
+            </a>
+          </div>
+        </div>
+      </nav>
+
+
       <vue-simple-spinner v-if="starsResult !== undefined && starsResult.length <= 0 && showSpinner" line-fg-color="#7bc96f"></vue-simple-spinner>
-      <div id="venn" v-show="(starsResult !== undefined && starsResult.length > 0 || mutualStarred.length > 0 || userOneUniqueStarred.length > 0 || userTwoUniqueStarred.length > 0)"></div>
-      <div class="container-lg clearfix" v-if="(starsResult !== undefined && starsResult.length > 0 || mutualStarred.length > 0 || userOneUniqueStarred.length > 0 || userTwoUniqueStarred.length > 0)">
+      <div id="venn" v-show="(starsResult !== undefined && starsResult.length > 0 || mutualStarred.length > 0 || userOneStarred.length > 0 || userTwoStarred.length > 0)"></div>
+      <div class="container-lg clearfix" v-if="(starsResult !== undefined && starsResult.length > 0 || mutualStarred.length > 0 || userOneStarred.length > 0 || userTwoStarred.length > 0)">
         <div class="col-3 float-left p-4">
         </div>
         <div class="col-3 float-left p-4">
@@ -118,10 +130,10 @@
       <div v-for="(star, index) in starsResult" class="col-4 float-left p-2" :key="index">
         <span class="tooltipped tooltipped-multiline tooltipped-ne tooltipped-align-left-1 p-2 mb-2 mr-2 float-left" :aria-label="`${star.name}:  ${(star.description !== null) ? star.description : 'No Descriptions, Sorry'}`">
           <octicon name="info"></octicon>
-        </span> 
+        </span>
        <div class="Box">
           <div class="Box-row d-flex flex-wrap flex-items-center">
-            <div class="flex-auto"> 
+            <div class="flex-auto">
               <strong>{{ (star.name.length > 16) ? star.name.slice(0, 16).concat('..') : star.name }}</strong>
               <div class="text-small text-gray-light">
                 {{ (star.description !== null) ? star.description.slice(0, 20).concat('..') : "--" }}
@@ -153,11 +165,15 @@ import 'vue-octicon/icons/info'
 import 'vue-octicon/icons/mark-github'
 import { intersection } from '../assets/js/intersection'
 import * as d3 from 'd3'
-// Generate github tokens under this URL. Once you landed the page create your 
+// Generate github tokens under this URL. Once you landed the page create your
 // own token using `Generate new token` button on the right side of your page..
 // Now get ready to play with gitrahub
-
 // https://github.com/settings/tokens
+
+let config = {
+  headers: {'Authorization': 'token bfdedafa6d65f58d981e3636a0da390a878560e3'}
+}
+
 export default {
   name: 'GitraHub',
   components: {
@@ -169,8 +185,14 @@ export default {
       inputone: '',
       inputtwo: '',
       mutualStarred: [],
-      userOneUniqueStarred: [],
-      userTwoUniqueStarred: [],
+      userOneStarred: [],
+      userTwoStarred: [],
+      mutualFollowers: [],
+      userOneFollowers: [],
+      userTwoFollowers: [],
+      mutualFollowing: [],
+      userOneFollowing: [],
+      userTwoFollowing: [],
       showSpinner: false,
       errorMessageFieldOne: '',
       errorMessageFieldTwo: '',
@@ -181,28 +203,34 @@ export default {
       uniqueLanguages: [],
       selectedLanguage: '',
       sortRepos: 'Default',
-      searchRepos: ''
+      searchRepos: '',
+      tabSelectionIndex: 0,
+      items: [
+        { message: 'Stars', name: 'starred' },
+        { message: 'Followers', name: 'followers' },
+        { message: 'Following', name: 'following' }
+      ]
     }
   },
   computed: {
     starsResult () {
-      let userOneUniqueStarred = this.userOneUniqueStarred
-      let userTwoUniqueStarred = this.userTwoUniqueStarred
+      let userOneStarred = this.userOneStarred
+      let userTwoStarred = this.userTwoStarred
       let mutualStarred = this.mutualStarred
       let starList = [], finalStarList=[], searchedRepos=[], obj
       if (this.leftSetPortion) {
-        obj = { 'arr': userOneUniqueStarred, 'key': 'left' }
+        obj = { 'arr': userOneStarred, 'key': 'left' }
         starList.push(obj)
       }
       if (this.rightSetPortion) {
-        obj = { 'arr': userTwoUniqueStarred, 'key': 'right' }
+        obj = { 'arr': userTwoStarred, 'key': 'right' }
         starList.push(obj)
       }
       if (this.intersectionPortion) {
         obj = { 'arr': mutualStarred, 'key': 'center' }
         starList.push(obj)
       }
-      
+
       if (this.leftSetPortion === false) {
         if (starList.map(val => val.key).indexOf('left') !== -1)
           starList.splice(starList.map(val => val.key).indexOf('left'), 1)
@@ -215,11 +243,10 @@ export default {
         if (starList.map(val => val.key).indexOf('center') !== -1)
           starList.splice(starList.map(val => val.key).indexOf('center'), 1)
       }
-
       for (let i in starList) {
         finalStarList.push(starList[i].arr)
       }
-      
+
       let result = Array.prototype.concat.apply([], finalStarList)
       if (this.sortRepos !== 'Default') {
         if (this.sortRepos === 'Most stars') {
@@ -236,7 +263,7 @@ export default {
         result.map((res) => {
           if (res.name.indexOf(this.searchRepos) !== -1) {
             searchedRepos.push(res)
-          } 
+          }
         })
         return searchedRepos
       }
@@ -256,7 +283,7 @@ export default {
       } else {
         return result
       }
-      
+
     }
   },
   mounted () {
@@ -265,17 +292,15 @@ export default {
     let circleData = [
       { 'cx': 300, 'cy': 120, 'id': 'cir1' ,'radius': 80, 'color' : '#7bc96f', 'align' : 'end' },
       { 'cx': 400, 'cy': 120, 'id': 'cir2' ,'radius': 80, 'color' : '#7bc96f', 'align' : 'start' }]
-    
+
     var svgContainer = d3.select('#venn').append('svg')
         .attr('width', width)
         .attr('height', height)
-
     // Add circles to the svgContainer
     var circles = svgContainer.selectAll("circle")
                            .data(circleData)
                            .enter()
                            .append("circle")
-
     // Add the circle attributes
     var circleAttributes = circles
                        .attr('cx', function (d) { return d.cx; })
@@ -289,31 +314,26 @@ export default {
                          d3.select(this).style('cursor', 'pointer')
                        })
                        .on('click', this.selectCircle)
-
     // Add the SVG Text Element to the svgContainer
     var text = svgContainer.selectAll("text")
                         .data(circleData)
                         .enter()
                         .append("text")
-
     // Add SVG Text Element Attributes
     var textLabels = text
                  .attr('x', function(d) { return d.cx; })
                  .attr('y', function(d) { return d.cy; })
                  .text( function (d) { return d.name; })
-                 .attr('text-anchor', function (d) { return d.align; })  
+                 .attr('text-anchor', function (d) { return d.align; })
                  .attr('font-family', 'sans-serif')
                  .attr('font-size', '15px')
                  .attr('fill', '#FFF')
-
     let x1 = circleData[0]['cx']
     let y1 = circleData[0]['cy']
     let x2 = circleData[1]['cx']
     let y2 = circleData[1]['cy']
     let r = circleData[0]['radius']
-
     var interPoints = intersection(x1, y1, r, x2, y2, r)
-
     svgContainer.append('g')
       .append('path')
       .attr('d', function() {
@@ -328,6 +348,9 @@ export default {
       .style('fill', '#239a3b').on('click', this.selectIntersection)
   },
   methods: {
+    tabSelect (index) {
+      this.tabSelectionIndex = index
+    },
     selectSort (sort) {
       this.sortRepos = sort
       this.searchRepos = ''
@@ -371,7 +394,7 @@ export default {
       let userOne, userTwo
       userOne = (this.inputone.split('/').length > 2) ? this.inputone.split('/')[3] : this.inputone
       userTwo = (this.inputtwo.split('/').length > 2) ? this.inputtwo.split('/')[3] : this.inputtwo
-      
+
       let userDetails = []
       userDetails[0] = (userOne.length > 9) ? userOne.slice(0, 7).concat('..') : userOne
       userDetails[1] = (userTwo.length > 9) ? userTwo.slice(0, 7).concat('..') : userTwo
@@ -379,8 +402,8 @@ export default {
       if (userOne !== '' && userTwo !== '') {
         if (this.mutualStarred.length > 0) {
           this.mutualStarred = []
-          this.userOneUniqueStarred = []
-          this.userTwoUniqueStarred = []
+          this.userOneStarred = []
+          this.userTwoStarred = []
         }
         this.uniqueLanguages = []
         this.selectedLanguage = ''
@@ -390,21 +413,18 @@ export default {
         this.errorMessageFieldTwo = ''
         let countOne = 1
         let countTwo = 1
-
         // replace below access token with your github access token..
-        // let config = {
-        //   headers: {'Authorization': 'token 5f55b5000330c1a56e328efe84gh4b6499b8219b'}
-        // }
+
         let userOneStarredRepos = []
         let userTwoStarredRepos = []
         let flagOneFinished = false
         let flagTwoFinished = false
-
-        // use access 
+        // use access
         // axios.get('https://api.github.com/users/'+userOne+'/starred?page='+countOne+'&per_page=100', config)
+        let getTabValue = this.items[this.tabSelectionIndex]['name']
         const collectUserOnestars = () => {
           Promise.all([
-            axios.get('https://api.github.com/users/'+userOne+'/starred?page='+countOne+'&per_page=100')
+            axios.get('https://api.github.com/users/'+userOne+'/'+getTabValue+'?page='+countOne+'&per_page=100', config)
           ]).then(response => {
             response.forEach((res) => {
               if (res.data.length !== 0) {
@@ -421,10 +441,10 @@ export default {
             this.errorMessageFieldOne = 'User '+userOne+' not found'
           })
         }
-        
+
         const collectUserTwostars = () => {
           Promise.all([
-            axios.get('https://api.github.com/users/'+userTwo+'/starred?page='+countTwo+'&per_page=100')
+            axios.get('https://api.github.com/users/'+userTwo+'/'+getTabValue+'?page='+countTwo+'&per_page=100', config)
           ]).then(response => {
             response.forEach((res) => {
               if (res.data.length !== 0) {
@@ -442,25 +462,22 @@ export default {
             this.errorMessageFieldTwo = 'User '+userTwo+' not found'
           })
         }
-
         collectUserOnestars()
         collectUserTwostars()
-        
+
         var isFinished = function () {
           if (flagOneFinished && flagTwoFinished) {
             if (checker) {
               window.clearInterval(checker)
             }
-
             var mostStarred, leastStarred
             if (userTwoStarredRepos.length > userOneStarredRepos.length) {
               mostStarred = userTwoStarredRepos
               leastStarred = userOneStarredRepos
             } else {
               mostStarred = userOneStarredRepos
-              leastStarred =userTwoStarredRepos 
+              leastStarred =userTwoStarredRepos
             }
-
             leastStarred.map((item, index) => {
               if (mostStarred.map(val => val.html_url).indexOf(item.html_url) > -1) {
                 let star = {}
@@ -472,7 +489,7 @@ export default {
                 this.mutualStarred.push(star)
               }
             })
-            
+
             userOneStarredRepos.map((mItem, mIndex) => {
               if (this.mutualStarred.map(val => val.htmlurl).indexOf(mItem.html_url) === -1) {
                 let star = {}
@@ -481,10 +498,9 @@ export default {
                 star.htmlurl = mItem.html_url
                 star.gazerscount = mItem.stargazers_count
                 star.language = mItem.language
-                this.userOneUniqueStarred.push(star)
+                this.userOneStarred.push(star)
               }
             })
-
             userTwoStarredRepos.map((mItem, mIndex) => {
               if (this.mutualStarred.map(val => val.htmlurl).indexOf(mItem.html_url) === -1) {
                 let star = {}
@@ -493,13 +509,12 @@ export default {
                 star.htmlurl = mItem.html_url
                 star.gazerscount = mItem.stargazers_count
                 star.language = mItem.language
-                this.userTwoUniqueStarred.push(star)
+                this.userTwoStarred.push(star)
               }
             })
             this.showSpinner = false
           }
         }.bind(this)
-
         var checker = window.setInterval(isFinished, 300)
       } else  if (userOne === '' || userTwo === '') {
         if (userOne === '') {
