@@ -171,7 +171,7 @@ import * as d3 from 'd3'
 // https://github.com/settings/tokens
 
 let config = {
-  headers: {'Authorization': 'token ac80f7ad41745695c27534e8aa829c1cd2a3efce'}
+  headers: {'Authorization': 'token 9fe7d8694b28e3dce90adc73afb992e60ca2d7d7'}
 }
 
 export default {
@@ -220,20 +220,19 @@ export default {
       let starList = [], finalStarList=[], searchedRepos=[], obj
 
       // Based on selecting the 'Venn diagram selection' area the starred repos will be pushed into the star list array
+      // this.pushStarReposToList(starList)
       if (this.leftSetPortion) {
-        obj = { 'arr': userOneStarred, 'key': 'left' }
-        starList.push(obj)
+        starList.push({ 'arr': userOneStarred, 'key': 'left' })
       }
       if (this.rightSetPortion) {
-        obj = { 'arr': userTwoStarred, 'key': 'right' }
-        starList.push(obj)
+        starList.push({ 'arr': userTwoStarred, 'key': 'right' })
       }
       if (this.intersectionPortion) {
-        obj = { 'arr': mutualStarred, 'key': 'center' }
-        starList.push(obj)
+        starList.push({ 'arr': mutualStarred, 'key': 'center' })
       }
 
       // Based on unselecting the 'Venn diagram selection' area the starred repos will be popped from the star list array
+      // this.popStarReposFromList(starList)
       let starListKey = starList.map(val => val.key)
       if (this.leftSetPortion === false && starListKey.indexOf('left') !== -1) {
         starList.splice(starListKey.indexOf('left'), 1)
@@ -335,6 +334,12 @@ export default {
       .style('fill', '#239a3b').on('click', this.onSelectIntersection)
   },
   methods: {
+    // pushStarReposToList () {
+
+    // },
+    // popStarReposFromList () {
+
+    // },
     onSortRepos () {
       if (this.sortRepos === 'Most stars') {
         result = result.slice().sort(function (a, b) {
@@ -374,7 +379,7 @@ export default {
       this.selectedLanguage = lang
       this.searchRepos = ''
     },
-    onCircleSelection (d, setPortion, setFillColor) {
+    onPortionSelection (d, setPortion, setFillColor) {
       if (d.cx == 300) {
         this.leftSetPortion = setPortion
       } else {
@@ -387,7 +392,7 @@ export default {
       let isCircleSelected = (d3.select('#'+d.id).style('fill') == 'rgb(123, 201, 111)')
       let setPortion = isCircleSelected ? true : false
       let setFillColor = isCircleSelected ? '#239a3b' : '#7bc96f'
-      this.onCircleSelection(d, setPortion, setFillColor)
+      this.onPortionSelection(d, setPortion, setFillColor)
       this.uniqueLanguages = []
       this.selectedLanguage = ''
       this.searchRepos = ''
@@ -436,10 +441,10 @@ export default {
         let flagTwoFinished = false
         // use access
         // axios.get('https://api.github.com/users/'+userOne+'/starred?page='+countOne+'&per_page=100', config)
-        let getTabValue = this.items[this.tabSelectionIndex]['name']
+        let getTabSectionName = this.items[this.tabSelectionIndex]['name']
         const collectUserOnestars = () => {
           Promise.all([
-            axios.get('https://api.github.com/users/'+userOne+'/'+getTabValue+'?page='+countOne+'&per_page=100', config)
+            axios.get('https://api.github.com/users/'+userOne+'/'+getTabSectionName+'?page='+countOne+'&per_page=100', config)
           ]).then(response => {
             response.forEach((res) => {
               if (res.data.length !== 0) {
@@ -459,7 +464,7 @@ export default {
 
         const collectUserTwostars = () => {
           Promise.all([
-            axios.get('https://api.github.com/users/'+userTwo+'/'+getTabValue+'?page='+countTwo+'&per_page=100', config)
+            axios.get('https://api.github.com/users/'+userTwo+'/'+getTabSectionName+'?page='+countTwo+'&per_page=100', config)
           ]).then(response => {
             response.forEach((res) => {
               if (res.data.length !== 0) {
@@ -505,25 +510,25 @@ export default {
               }
             })
 
-            userOneStarredRepos.map((mItem, mIndex) => {
-              if (this.mutualStarred.map(val => val.htmlurl).indexOf(mItem.html_url) === -1) {
+            userOneStarredRepos.map((item, index) => {
+              if (this.mutualStarred.map(val => val.htmlurl).indexOf(item.html_url) === -1) {
                 let star = {}
-                star.name = mItem.name
-                star.description = mItem.description
-                star.htmlurl = mItem.html_url
-                star.gazerscount = mItem.stargazers_count
-                star.language = mItem.language
+                star.name = item.name
+                star.description = item.description
+                star.htmlurl = item.html_url
+                star.gazerscount = item.stargazers_count
+                star.language = item.language
                 this.userOneStarred.push(star)
               }
             })
-            userTwoStarredRepos.map((mItem, mIndex) => {
-              if (this.mutualStarred.map(val => val.htmlurl).indexOf(mItem.html_url) === -1) {
+            userTwoStarredRepos.map((item, index) => {
+              if (this.mutualStarred.map(val => val.htmlurl).indexOf(item.html_url) === -1) {
                 let star = {}
-                star.name = mItem.name
-                star.description = mItem.description
-                star.htmlurl = mItem.html_url
-                star.gazerscount = mItem.stargazers_count
-                star.language = mItem.language
+                star.name = item.name
+                star.description = item.description
+                star.htmlurl = item.html_url
+                star.gazerscount = item.stargazers_count
+                star.language = item.language
                 this.userTwoStarred.push(star)
               }
             })
