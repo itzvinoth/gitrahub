@@ -30,12 +30,14 @@
       <div class="container-lg clearfix">
         <div class="col-6 float-left border p-6">
           <dl class="form-group errored">
+            vinothkumarrenganathan
             <dd><input class="form-control" type="text" v-model="inputone" placeholder="Enter github username or profile URL"></dd>
             <dd class="error" id="form-error-text" v-if="errorMessageFieldOne !== ''"> {{ errorMessageFieldOne }} </dd>
           </dl>
         </div>
         <div class="col-6 float-left border p-6">
           <dl class="form-group errored">
+            Rafi993
             <dd><input class="form-control" type="text" v-model="inputtwo" placeholder="Enter github username or profile URL"></dd>
             <dd class="error" id="form-error-text" v-if="errorMessageFieldTwo !== ''"> {{ errorMessageFieldTwo }} </dd>
           </dl>
@@ -44,7 +46,7 @@
     </form>
     <div class="container-lg clearfix">
       <div class="col-11 m-6">
-        <button @click="fetchReposStarred('msg', $event)" type="submit" class="btn btn-primary">Find shared interest</button>
+        <button @click="fetchReposStarred($event)" type="submit" class="btn btn-primary">Find shared interest</button>
       </div>
     </div>
 
@@ -57,12 +59,11 @@
             <!-- <a href="#" class="UnderlineNav-item">Stars
               <span class="Counter">135</span>
             </a> -->
-            <a href="#" class="UnderlineNav-item" :class="{'selected': (index === tabSelectionIndex)}" v-for="(item, index) in items" :key="index" @click="onTabSelect(index)">{{ item.message }}
+            <a href="#" class="UnderlineNav-item" :class="{'selected': (index === tabSelectionIndex)}" v-for="(item, index) in items" :key="index" @click="onTabSelect(index, $event)">{{ item.message }}
             </a>
           </div>
         </div>
       </nav>
-
 
       <vue-simple-spinner v-if="starsResult !== undefined && starsResult.length <= 0 && showSpinner" line-fg-color="#7bc96f"></vue-simple-spinner>
       <div id="venn" v-show="(starsResult !== undefined && starsResult.length > 0 || mutualStarred.length > 0 || userOneStarred.length > 0 || userTwoStarred.length > 0)"></div>
@@ -131,7 +132,7 @@
         <span class="tooltipped tooltipped-multiline tooltipped-ne tooltipped-align-left-1 p-2 mb-2 mr-2 float-left" :aria-label="`${star.name}:  ${(star.description !== null) ? star.description : 'No Descriptions, Sorry'}`">
           <octicon name="info"></octicon>
         </span>
-       <div class="Box">
+      <div class="Box">
           <div class="Box-row d-flex flex-wrap flex-items-center">
             <div class="flex-auto">
               <strong>{{ (star.name.length > 16) ? star.name.slice(0, 16).concat('..') : star.name }}</strong>
@@ -165,11 +166,12 @@ import 'vue-octicon/icons/info'
 import 'vue-octicon/icons/mark-github'
 import { intersection } from '../assets/js/intersection'
 import * as d3 from 'd3'
+import { mapGetters, mapActions } from 'vuex'
+
 // Generate github tokens under this URL. Once you landed the page create your
 // own token using `Generate new token` button on the right side of your page..
 // Now get ready to play with gitrahub
 // https://github.com/settings/tokens
-
 let config = {
   headers: {'Authorization': 'token 9fe7d8694b28e3dce90adc73afb992e60ca2d7d7'}
 }
@@ -213,6 +215,7 @@ export default {
     }
   },
   computed: {
+    ...mapGetters(['mutualStarred']),
     starsResult () {
       let userOneStarred = this.userOneStarred
       let userTwoStarred = this.userTwoStarred
@@ -334,12 +337,6 @@ export default {
       .style('fill', '#239a3b').on('click', this.onSelectIntersection)
   },
   methods: {
-    // pushStarReposToList () {
-
-    // },
-    // popStarReposFromList () {
-
-    // },
     onSortRepos () {
       if (this.sortRepos === 'Most stars') {
         result = result.slice().sort(function (a, b) {
@@ -368,8 +365,9 @@ export default {
         })
         return filteredRepos
     },
-    onTabSelect (index) {
+    onTabSelect (index, event) {
       this.tabSelectionIndex = index
+      this.fetchReposStarred(event)
     },
     onSelectSort (sort) {
       this.sortRepos = sort
@@ -410,7 +408,7 @@ export default {
       this.selectedLanguage = ''
       this.searchRepos = ''
     },
-    fetchReposStarred (msg, event) {
+    fetchReposStarred (event) {
       let userOne, userTwo
       userOne = (this.inputone.split('/').length > 2) ? this.inputone.split('/')[3] : this.inputone
       userTwo = (this.inputtwo.split('/').length > 2) ? this.inputtwo.split('/')[3] : this.inputtwo
@@ -431,62 +429,116 @@ export default {
         this.showSpinner = true
         this.errorMessageFieldOne = ''
         this.errorMessageFieldTwo = ''
-        let countOne = 1
-        let countTwo = 1
+        let countStarsOne = 1
+        let countStarsTwo = 1
+        let countFollowersOne = 1
+        let countFollowersTwo = 1
         // replace below access token with your github access token..
 
         let userOneStarredRepos = []
         let userTwoStarredRepos = []
-        let flagOneFinished = false
-        let flagTwoFinished = false
+        let userOneFollowers = []
+        let userTwoFollowers = []
+        let flagOneStarsFetchFinished = false
+        let flagTwoStarsFetchFinished = false
+        let flagOneFollowersFetchFinished = false
+        let flagTwoFollowersFetchFinished = false
         // use access
-        // axios.get('https://api.github.com/users/'+userOne+'/starred?page='+countOne+'&per_page=100', config)
+        // axios.get('https://api.github.com/users/'+userOne+'/starred?page='+countStarsOne+'&per_page=100', config)
         let getTabSectionName = this.items[this.tabSelectionIndex]['name']
-        const collectUserOnestars = () => {
-          Promise.all([
-            axios.get('https://api.github.com/users/'+userOne+'/'+getTabSectionName+'?page='+countOne+'&per_page=100', config)
-          ]).then(response => {
-            response.forEach((res) => {
-              if (res.data.length !== 0) {
-                res.data.forEach((result) => {
-                  userOneStarredRepos.push(result)
-                })
-                countOne++
-                collectUserOnestars()
-              } else {
-                flagOneFinished = true
-              }
+        if (getTabSectionName === 'starred') {
+          const collectUserOnestars = () => {
+            Promise.all([
+              axios.get('https://api.github.com/users/'+userOne+'/'+getTabSectionName+'?page='+countStarsOne+'&per_page=100', config)
+            ]).then(response => {
+              response.forEach((res) => {
+                if (res.data.length !== 0) {
+                  res.data.forEach((result) => {
+                    userOneStarredRepos.push(result)
+                  })
+                  countStarsOne++
+                  collectUserOnestars()
+                } else {
+                  flagOneStarsFetchFinished = true
+                }
+              })
+            }).catch(() => {
+              this.errorMessageFieldOne = 'User '+userOne+' not found'
             })
-          }).catch(() => {
-            this.errorMessageFieldOne = 'User '+userOne+' not found'
-          })
-        }
+          }
 
-        const collectUserTwostars = () => {
-          Promise.all([
-            axios.get('https://api.github.com/users/'+userTwo+'/'+getTabSectionName+'?page='+countTwo+'&per_page=100', config)
-          ]).then(response => {
-            response.forEach((res) => {
-              if (res.data.length !== 0) {
-                // userOneStarredRepos.push(res.data)
-                res.data.forEach((result) => {
-                  userTwoStarredRepos.push(result)
-                })
-                countTwo++
-                collectUserTwostars()
-              } else {
-                flagTwoFinished = true
-              }
+          const collectUserTwostars = () => {
+            Promise.all([
+              axios.get('https://api.github.com/users/'+userTwo+'/'+getTabSectionName+'?page='+countStarsTwo+'&per_page=100', config)
+            ]).then(response => {
+              response.forEach((res) => {
+                if (res.data.length !== 0) {
+                  // userOneStarredRepos.push(res.data)
+                  res.data.forEach((result) => {
+                    userTwoStarredRepos.push(result)
+                  })
+                  countStarsTwo++
+                  collectUserTwostars()
+                } else {
+                  flagTwoStarsFetchFinished = true
+                }
+              })
+            }).catch(() => {
+              this.errorMessageFieldTwo = 'User '+userTwo+' not found'
             })
-          }).catch(() => {
-            this.errorMessageFieldTwo = 'User '+userTwo+' not found'
-          })
+          }
+
+          collectUserOnestars()
+          collectUserTwostars()
         }
-        collectUserOnestars()
-        collectUserTwostars()
+        if (getTabSectionName === 'followers') {
+          const collectUserOneFollowers = () => {
+            Promise.all([
+              axios.get('https://api.github.com/users/'+userOne+'/'+getTabSectionName+'?page='+countFollowersOne+'&per_page=100', config)
+            ]).then(response => {
+              response.forEach((res) => {
+                if (res.data.length !== 0) {
+                  res.data.forEach((result) => {
+                    userOneFollowers.push(result)
+                  })
+                  countFollowersOne++
+                  collectUserOneFollowers()
+                } else {
+                  flagOneFollowersFetchFinished = true
+                }
+              })
+            }).catch(() => {
+              this.errorMessageFieldOne = 'User '+userOne+' not found'
+            })
+          }
+
+          const collectUserTwoFollowers = () => {
+            Promise.all([
+              axios.get('https://api.github.com/users/'+userTwo+'/'+getTabSectionName+'?page='+countFollowersTwo+'&per_page=100', config)
+            ]).then(response => {
+              response.forEach((res) => {
+                if (res.data.length !== 0) {
+                  // userOneStarredRepos.push(res.data)
+                  res.data.forEach((result) => {
+                    userTwoFollowers.push(result)
+                  })
+                  countFollowersTwo++
+                  collectUserTwoFollowers()
+                } else {
+                  flagTwoFollowersFetchFinished = true
+                }
+              })
+            }).catch(() => {
+              this.errorMessageFieldTwo = 'User '+userTwo+' not found'
+            })
+          }
+
+          collectUserOneFollowers()
+          collectUserTwoFollowers()
+        }
 
         var isFinished = function () {
-          if (flagOneFinished && flagTwoFinished) {
+          if (getTabSectionName === 'starred' && flagOneStarsFetchFinished && flagTwoStarsFetchFinished) {
             if (checker) {
               window.clearInterval(checker)
             }
@@ -498,6 +550,7 @@ export default {
               mostStarred = userOneStarredRepos
               leastStarred =userTwoStarredRepos
             }
+
             leastStarred.map((item, index) => {
               if (mostStarred.map(val => val.html_url).indexOf(item.html_url) > -1) {
                 let star = {}
@@ -521,6 +574,7 @@ export default {
                 this.userOneStarred.push(star)
               }
             })
+
             userTwoStarredRepos.map((item, index) => {
               if (this.mutualStarred.map(val => val.htmlurl).indexOf(item.html_url) === -1) {
                 let star = {}
@@ -530,6 +584,48 @@ export default {
                 star.gazerscount = item.stargazers_count
                 star.language = item.language
                 this.userTwoStarred.push(star)
+              }
+            })
+            this.showSpinner = false
+          }
+
+          if (getTabSectionName === 'followers' && flagOneFollowersFetchFinished && flagTwoFollowersFetchFinished) {
+            if (checker) {
+              window.clearInterval(checker)
+            }
+            var mostFollowers, leastFollowers
+            if (userTwoFollowers.length > userOneFollowers.length) {
+              mostFollowers = userTwoFollowers
+              leastFollowers = userOneFollowers
+            } else {
+              mostFollowers = userOneFollowers
+              leastFollowers = userTwoFollowers
+            }
+
+            leastFollowers.map((item, index) => {
+              if (mostFollowers.map(val => val.html_url).indexOf(item.html_url) > -1) {
+                let follower = {}
+                follower.name = item.login
+                follower.htmlurl = item.html_url
+                this.mutualFollowers.push(follower)
+              }
+            })
+
+            userOneFollowers.map((item, index) => {
+              if (this.mutualFollowers.map(val => val.htmlurl).indexOf(item.html_url) === -1) {
+                let follower = {}
+                follower.name = item.name
+                follower.htmlurl = item.html_url
+                this.userOneFollowers.push(follower)
+              }
+            })
+
+            userTwoFollowers.map((item, index) => {
+              if (this.mutualFollowers.map(val => val.htmlurl).indexOf(item.html_url) === -1) {
+                let follower = {}
+                follower.name = item.name
+                follower.htmlurl = item.html_url
+                this.userTwoFollowers.push(follower)
               }
             })
             this.showSpinner = false

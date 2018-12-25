@@ -15,14 +15,14 @@ const PORT = process.env.PORT && Number(process.env.PORT)
 
 const devWebpackConfig = merge(baseWebpackConfig, {
   module: {
-    rules: utils.styleLoaders({ 
-      sourceMap: config.dev.cssSourceMap, 
+    rules: utils.styleLoaders({
+      sourceMap: config.dev.cssSourceMap,
       usePostCSS: true,
       loaders: [
         {
           test: /\.vue$/,
           loader: 'vue'
-        }, 
+        },
         {
             test: /\.s[a|c]ss$/,
             loader: 'style!css!sass'
