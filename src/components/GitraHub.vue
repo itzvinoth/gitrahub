@@ -46,14 +46,14 @@
     </form>
     <div class="container-lg clearfix">
       <div class="col-11 m-6">
-        <button @click="fetchReposStarred($event)" type="submit" class="btn btn-primary">Find shared interest</button>
+        <button @click="fetchDetails($event)" type="submit" class="btn btn-primary">Find shared interest</button>
       </div>
     </div>
 
     <div class="container-lg clearfix">
 
       <!-- today -->
-      <nav class="UnderlineNav UnderlineNav--full" aria-label="Foo bar">
+      <nav class="UnderlineNav UnderlineNav--full" aria-label="Foo bar" v-if="starsResult !== undefined && starsResult.length > 0">
         <div class="container-lg UnderlineNav-container">
           <div class="UnderlineNav-body">
             <!-- <a href="#" class="UnderlineNav-item">Stars
@@ -64,87 +64,100 @@
           </div>
         </div>
       </nav>
-
-      <vue-simple-spinner v-if="starsResult !== undefined && starsResult.length <= 0 && showSpinner" line-fg-color="#7bc96f"></vue-simple-spinner>
-      <div id="venn" v-show="(starsResult !== undefined && starsResult.length > 0 || mutualStarred.length > 0 || userOneStarred.length > 0 || userTwoStarred.length > 0)"></div>
-      <div class="container-lg clearfix" v-if="(starsResult !== undefined && starsResult.length > 0 || mutualStarred.length > 0 || userOneStarred.length > 0 || userTwoStarred.length > 0)">
-        <div class="col-3 float-left p-4">
-        </div>
-        <div class="col-3 float-left p-4">
-          <input class="form-control" v-model="searchRepos" style="width: 100%" type="text" placeholder="Search starred repositories..">
-        </div>
-        <div class="col-3 float-left p-4">
-          <div class="select-menu js-menu-container js-select-menu">
-            <button class="btn select-menu-button js-menu-target" type="button" aria-haspopup="true" aria-expanded="false" style="width: 100%">
-              Sort: {{ sortRepos }}
-            </button>
-            <div class="select-menu-modal-holder">
-              <div class="select-menu-modal js-menu-content">
-                <div class="select-menu-header js-navigation-enable" tabindex="-1">
-                  <button class="btn-link close-button js-menu-close" type="button"><octicon name="x" aria-label="Close menu"></octicon></button>
-                  <span class="select-menu-title">Sort options:</span>
+      <div v-if="tabSelectionIndex === 0">
+        <vue-simple-spinner v-if="starsResult !== undefined && starsResult.length <= 0 && showSpinner" line-fg-color="#7bc96f"></vue-simple-spinner>
+        <div id="venn" v-show="(starsResult !== undefined && starsResult.length > 0 || mutualStarred.length > 0 || userOneStarred.length > 0 || userTwoStarred.length > 0)"></div>
+        <div class="container-lg clearfix" v-if="(starsResult !== undefined && starsResult.length > 0 || mutualStarred.length > 0 || userOneStarred.length > 0 || userTwoStarred.length > 0)">
+          <div class="col-3 float-left p-4">
+          </div>
+          <div class="col-3 float-left p-4">
+            <input class="form-control" v-model="searchRepos" style="width: 100%" type="text" placeholder="Search starred repositories..">
+          </div>
+          <div class="col-3 float-left p-4">
+            <div class="select-menu js-menu-container js-select-menu">
+              <button class="btn select-menu-button js-menu-target" type="button" aria-haspopup="true" aria-expanded="false" style="width: 100%">
+                Sort: {{ sortRepos }}
+              </button>
+              <div class="select-menu-modal-holder">
+                <div class="select-menu-modal js-menu-content">
+                  <div class="select-menu-header js-navigation-enable" tabindex="-1">
+                    <button class="btn-link close-button js-menu-close" type="button"><octicon name="x" aria-label="Close menu"></octicon></button>
+                    <span class="select-menu-title">Sort options:</span>
+                  </div>
+                  <div class="select-menu-list js-navigation-container">
+                    <a @click.prevent.stop="onSelectSort('Default')" class="select-menu-item selected js-navigation-item">
+                      <span class="select-menu-item-text js-select-button-text">Default</span>
+                    </a>
+                    <a @click.prevent.stop="onSelectSort('Most stars')" class="select-menu-item selected js-navigation-item">
+                      <span class="select-menu-item-text js-select-button-text">Most stars</span>
+                    </a>
+                    <a @click.prevent.stop="onSelectSort('Least stars')" class="select-menu-item selected js-navigation-item">
+                      <span class="select-menu-item-text js-select-button-text">Least stars</span>
+                    </a>
+                  </div>
                 </div>
-                <div class="select-menu-list js-navigation-container">
-                  <a @click.prevent.stop="onSelectSort('Default')" class="select-menu-item selected js-navigation-item">
-                    <span class="select-menu-item-text js-select-button-text">Default</span>
-                  </a>
-                  <a @click.prevent.stop="onSelectSort('Most stars')" class="select-menu-item selected js-navigation-item">
-                    <span class="select-menu-item-text js-select-button-text">Most stars</span>
-                  </a>
-                  <a @click.prevent.stop="onSelectSort('Least stars')" class="select-menu-item selected js-navigation-item">
-                    <span class="select-menu-item-text js-select-button-text">Least stars</span>
-                  </a>
+              </div>
+            </div>
+          </div>
+          <div class="col-3 float-left p-4">
+            <div class="select-menu js-menu-container js-select-menu">
+              <button class="btn select-menu-button js-menu-target" type="button" aria-haspopup="true" aria-expanded="false">
+                Language: {{ (selectedLanguage == '') ? 'All languages' : selectedLanguage }}
+              </button>
+              <div class="select-menu-modal-holder">
+                <div class="select-menu-modal js-menu-content">
+                  <div class="select-menu-header js-navigation-enable" tabindex="-1">
+                    <button class="btn-link close-button js-menu-close" type="button"><octicon name="x" aria-label="Close menu"></octicon></button>
+                    <span class="select-menu-title">Select language:</span>
+                  </div>
+                  <div class="select-menu-list js-navigation-container">
+                    <a @click.prevent="onSelectLang('')" class="select-menu-item selected js-navigation-item">
+                      <span class="select-menu-item-text js-select-button-text">All languages</span>
+                    </a>
+                    <a v-for="(lang, index) in uniqueLanguages" :key="index" @click.prevent="onSelectLang(lang)" class="select-menu-item selected js-navigation-item">
+                      <span class="select-menu-item-text js-select-button-text">{{lang}}</span>
+                    </a>
+                  </div>
                 </div>
               </div>
             </div>
           </div>
         </div>
-        <div class="col-3 float-left p-4">
-          <div class="select-menu js-menu-container js-select-menu">
-            <button class="btn select-menu-button js-menu-target" type="button" aria-haspopup="true" aria-expanded="false">
-              Language: {{ (selectedLanguage == '') ? 'All languages' : selectedLanguage }}
-            </button>
-            <div class="select-menu-modal-holder">
-              <div class="select-menu-modal js-menu-content">
-                <div class="select-menu-header js-navigation-enable" tabindex="-1">
-                  <button class="btn-link close-button js-menu-close" type="button"><octicon name="x" aria-label="Close menu"></octicon></button>
-                  <span class="select-menu-title">Select language:</span>
+        <div v-for="(star, index) in starsResult" class="col-4 float-left p-2" :key="index">
+          <span class="tooltipped tooltipped-multiline tooltipped-ne tooltipped-align-left-1 p-2 mb-2 mr-2 float-left" :aria-label="`${star.name}:  ${(star.description !== null) ? star.description : 'No Descriptions found'}`">
+            <octicon name="info"></octicon>
+          </span>
+          <div class="Box">
+            <div class="Box-row d-flex flex-wrap flex-items-center">
+              <div class="flex-auto">
+                <strong>{{ (star.name.length > 16) ? star.name.slice(0, 16).concat('..') : star.name }}</strong>
+                <div class="text-small text-gray-light">
+                  {{ (star.description !== null) ? star.description.slice(0, 20).concat('..') : "--" }}
                 </div>
-                <div class="select-menu-list js-navigation-container">
-                  <a @click.prevent="onSelectLang('')" class="select-menu-item selected js-navigation-item">
-                    <!-- <octicon name="check" class="select-menu-item-icon"></octicon> -->
-                    <span class="select-menu-item-text js-select-button-text">All languages</span>
-                  </a>
-                  <a v-for="(lang, index) in uniqueLanguages" :key="index" @click.prevent="onSelectLang(lang)" class="select-menu-item selected js-navigation-item">
-                    <span class="select-menu-item-text js-select-button-text">{{lang}}</span>
-                  </a>
-                  <!-- <a href="#url" class="select-menu-item selected js-navigation-item">
-                    <octicon name="check" class="select-menu-item-icon"></octicon>
-                    <span class="select-menu-item-text js-select-button-text">Item 1</span>
-                  </a> -->
-                </div>
+              </div>
+              <div class="clearfix">
+                <a class="btn btn-sm" target='_blank' :href="`${star.htmlurl}`" role="button">
+                  <octicon name="star"></octicon> {{ star.gazerscount }}
+                </a>
               </div>
             </div>
           </div>
         </div>
       </div>
-      <div v-for="(star, index) in starsResult" class="col-4 float-left p-2" :key="index">
-        <span class="tooltipped tooltipped-multiline tooltipped-ne tooltipped-align-left-1 p-2 mb-2 mr-2 float-left" :aria-label="`${star.name}:  ${(star.description !== null) ? star.description : 'No Descriptions, Sorry'}`">
-          <octicon name="info"></octicon>
-        </span>
-      <div class="Box">
-          <div class="Box-row d-flex flex-wrap flex-items-center">
-            <div class="flex-auto">
-              <strong>{{ (star.name.length > 16) ? star.name.slice(0, 16).concat('..') : star.name }}</strong>
-              <div class="text-small text-gray-light">
-                {{ (star.description !== null) ? star.description.slice(0, 20).concat('..') : "--" }}
+      <div v-if="tabSelectionIndex === 1">
+        <vue-simple-spinner v-if="followersResult !== undefined && followersResult.length <= 0 && showSpinner" line-fg-color="#7bc96f"></vue-simple-spinner>
+        <div id="venn" v-show="(followersResult !== undefined && followersResult.length > 0 || mutualFollowers.length > 0 || userOneFollowers.length > 0 || userTwoFollowers > 0)"></div>
+        <div v-for="(follower, index) in followersResult" class="col-4 float-left p-2" :key="index">
+          <div class="Box">
+            <div class="Box-row d-flex flex-wrap flex-items-center">
+              <div class="flex-auto">
+                <strong>{{ (follower.name.length > 22) ? follower.name.slice(0, 22).concat('..') : follower.name }}</strong>
               </div>
-            </div>
-            <!-- <div class="Subhead-actions"><a target='_blank' :href="`${star.htmlurl}`" class="btn btn-sm btn-primary" role="button">Link</a></div> -->
-            <div class="clearfix">
-              <a class="btn btn-sm" target='_blank' :href="`${star.htmlurl}`" role="button">
-                <octicon name="star"></octicon> {{ star.gazerscount }}
-              </a>
+              <div class="clearfix">
+                <a class="btn btn-sm" target='_blank' :href="`${follower.htmlurl}`" role="button">
+                  <octicon name="link-external"></octicon>
+                </a>
+              </div>
             </div>
           </div>
         </div>
@@ -166,15 +179,25 @@ import 'vue-octicon/icons/info'
 import 'vue-octicon/icons/mark-github'
 import { intersection } from '../assets/js/intersection'
 import * as d3 from 'd3'
+import store from '../store'
 import { mapGetters, mapActions } from 'vuex'
+import {
+  collectStarsData,
+  collectFollowersData,
+  userOneStarredRepos,
+  userTwoStarredRepos,
+  flagOneStarsFetchFinished,
+  flagTwoStarsFetchFinished,
+	userOneFollowers,
+	userTwoFollowers,
+  flagOneFollowersFetchFinished,
+  flagTwoFollowersFetchFinished
+} from './collectData.js'
 
 // Generate github tokens under this URL. Once you landed the page create your
 // own token using `Generate new token` button on the right side of your page..
 // Now get ready to play with gitrahub
 // https://github.com/settings/tokens
-let config = {
-  headers: {'Authorization': 'token 9fe7d8694b28e3dce90adc73afb992e60ca2d7d7'}
-}
 
 export default {
   name: 'GitraHub',
@@ -186,15 +209,6 @@ export default {
     return {
       inputone: '',
       inputtwo: '',
-      mutualStarred: [],
-      userOneStarred: [],
-      userTwoStarred: [],
-      mutualFollowers: [],
-      userOneFollowers: [],
-      userTwoFollowers: [],
-      mutualFollowing: [],
-      userOneFollowing: [],
-      userTwoFollowing: [],
       showSpinner: false,
       errorMessageFieldOne: '',
       errorMessageFieldTwo: '',
@@ -215,7 +229,38 @@ export default {
     }
   },
   computed: {
-    ...mapGetters(['mutualStarred']),
+    ...mapGetters(['mutualStarred', 'userOneStarred', 'userTwoStarred', 'mutualFollowers', 'userOneFollowers', 'userTwoFollowers']),
+    followersResult () {
+      let userOneFollowers = this.userOneFollowers
+      let userTwoFollowers = this.userTwoFollowers
+      let mutualFollowers = this.mutualFollowers
+      let followersList = [], finalFollowersList = []
+      if (this.leftSetPortion) {
+        followersList.push({ 'arr': userOneFollowers, 'key': 'left' })
+      }
+      if (this.rightSetPortion) {
+        followersList.push({ 'arr': userTwoFollowers, 'key': 'right' })
+      }
+      if (this.intersectionPortion) {
+        followersList.push({ 'arr': mutualFollowers, 'key': 'center' })
+      }
+      let followersListKey = followersList.map(val => val.key)
+      if (this.leftSetPortion === false && followersListKey.indexOf('left') !== -1) {
+        followersList.splice(followersListKey.indexOf('left'), 1)
+      }
+      if (this.rightSetPortion === false && followersListKey.indexOf('right') !== -1) {
+        followersList.splice(followersListKey.indexOf('right'), 1)
+      }
+      if (this.intersectionPortion === false && followersListKey.indexOf('center') !== -1) {
+        followersList.splice(followersListKey.indexOf('center'), 1)
+      }
+      for (let i in followersList) {
+        finalFollowersList.push(followersList[i].arr)
+      }
+
+      let result = Array.prototype.concat.apply([], finalFollowersList)
+      return result
+    },
     starsResult () {
       let userOneStarred = this.userOneStarred
       let userTwoStarred = this.userTwoStarred
@@ -337,6 +382,7 @@ export default {
       .style('fill', '#239a3b').on('click', this.onSelectIntersection)
   },
   methods: {
+    ...mapActions(['getStarsInfo', 'getFollowersInfo']),
     onSortRepos () {
       if (this.sortRepos === 'Most stars') {
         result = result.slice().sort(function (a, b) {
@@ -367,7 +413,7 @@ export default {
     },
     onTabSelect (index, event) {
       this.tabSelectionIndex = index
-      this.fetchReposStarred(event)
+      this.fetchDetails(event)
     },
     onSelectSort (sort) {
       this.sortRepos = sort
@@ -408,7 +454,7 @@ export default {
       this.selectedLanguage = ''
       this.searchRepos = ''
     },
-    fetchReposStarred (event) {
+    fetchDetails (event) {
       let userOne, userTwo
       userOne = (this.inputone.split('/').length > 2) ? this.inputone.split('/')[3] : this.inputone
       userTwo = (this.inputtwo.split('/').length > 2) ? this.inputtwo.split('/')[3] : this.inputtwo
@@ -417,221 +463,147 @@ export default {
       userDetails[0] = (userOne.length > 9) ? userOne.slice(0, 7).concat('..') : userOne
       userDetails[1] = (userTwo.length > 9) ? userTwo.slice(0, 7).concat('..') : userTwo
       d3.select('#venn').selectAll('text').text(function (d, i) { return userDetails[i] })
+
       if (userOne !== '' && userTwo !== '') {
-        if (this.mutualStarred.length > 0) {
-          this.mutualStarred = []
-          this.userOneStarred = []
-          this.userTwoStarred = []
-        }
         this.uniqueLanguages = []
         this.selectedLanguage = ''
         this.searchRepos = ''
         this.showSpinner = true
-        this.errorMessageFieldOne = ''
-        this.errorMessageFieldTwo = ''
-        let countStarsOne = 1
-        let countStarsTwo = 1
-        let countFollowersOne = 1
-        let countFollowersTwo = 1
         // replace below access token with your github access token..
 
-        let userOneStarredRepos = []
-        let userTwoStarredRepos = []
-        let userOneFollowers = []
-        let userTwoFollowers = []
-        let flagOneStarsFetchFinished = false
-        let flagTwoStarsFetchFinished = false
-        let flagOneFollowersFetchFinished = false
-        let flagTwoFollowersFetchFinished = false
         // use access
-        // axios.get('https://api.github.com/users/'+userOne+'/starred?page='+countStarsOne+'&per_page=100', config)
         let getTabSectionName = this.items[this.tabSelectionIndex]['name']
+
         if (getTabSectionName === 'starred') {
-          const collectUserOnestars = () => {
-            Promise.all([
-              axios.get('https://api.github.com/users/'+userOne+'/'+getTabSectionName+'?page='+countStarsOne+'&per_page=100', config)
-            ]).then(response => {
-              response.forEach((res) => {
-                if (res.data.length !== 0) {
-                  res.data.forEach((result) => {
-                    userOneStarredRepos.push(result)
-                  })
-                  countStarsOne++
-                  collectUserOnestars()
-                } else {
-                  flagOneStarsFetchFinished = true
-                }
-              })
-            }).catch(() => {
-              this.errorMessageFieldOne = 'User '+userOne+' not found'
-            })
-          }
-
-          const collectUserTwostars = () => {
-            Promise.all([
-              axios.get('https://api.github.com/users/'+userTwo+'/'+getTabSectionName+'?page='+countStarsTwo+'&per_page=100', config)
-            ]).then(response => {
-              response.forEach((res) => {
-                if (res.data.length !== 0) {
-                  // userOneStarredRepos.push(res.data)
-                  res.data.forEach((result) => {
-                    userTwoStarredRepos.push(result)
-                  })
-                  countStarsTwo++
-                  collectUserTwostars()
-                } else {
-                  flagTwoStarsFetchFinished = true
-                }
-              })
-            }).catch(() => {
-              this.errorMessageFieldTwo = 'User '+userTwo+' not found'
-            })
-          }
-
-          collectUserOnestars()
-          collectUserTwostars()
+          collectStarsData.collectUserOnestarredRepos(userOne)
+          collectStarsData.collectUserTwostarredRepos(userTwo)
         }
         if (getTabSectionName === 'followers') {
-          const collectUserOneFollowers = () => {
-            Promise.all([
-              axios.get('https://api.github.com/users/'+userOne+'/'+getTabSectionName+'?page='+countFollowersOne+'&per_page=100', config)
-            ]).then(response => {
-              response.forEach((res) => {
-                if (res.data.length !== 0) {
-                  res.data.forEach((result) => {
-                    userOneFollowers.push(result)
-                  })
-                  countFollowersOne++
-                  collectUserOneFollowers()
-                } else {
-                  flagOneFollowersFetchFinished = true
-                }
-              })
-            }).catch(() => {
-              this.errorMessageFieldOne = 'User '+userOne+' not found'
-            })
-          }
-
-          const collectUserTwoFollowers = () => {
-            Promise.all([
-              axios.get('https://api.github.com/users/'+userTwo+'/'+getTabSectionName+'?page='+countFollowersTwo+'&per_page=100', config)
-            ]).then(response => {
-              response.forEach((res) => {
-                if (res.data.length !== 0) {
-                  // userOneStarredRepos.push(res.data)
-                  res.data.forEach((result) => {
-                    userTwoFollowers.push(result)
-                  })
-                  countFollowersTwo++
-                  collectUserTwoFollowers()
-                } else {
-                  flagTwoFollowersFetchFinished = true
-                }
-              })
-            }).catch(() => {
-              this.errorMessageFieldTwo = 'User '+userTwo+' not found'
-            })
-          }
-
-          collectUserOneFollowers()
-          collectUserTwoFollowers()
+          collectFollowersData.collectUserOneFollowers(userOne)
+          collectFollowersData.collectUserTwoFollowers(userTwo)
         }
 
-        var isFinished = function () {
-          if (getTabSectionName === 'starred' && flagOneStarsFetchFinished && flagTwoStarsFetchFinished) {
-            if (checker) {
-              window.clearInterval(checker)
+        if (getTabSectionName === 'starred') {
+          var isStarsFetchFinished = function () {
+            if (flagOneStarsFetchFinished && flagTwoStarsFetchFinished) {
+              let mutualStarred = [],
+                  userOneStarred = [],
+                  userTwoStarred = []
+              if (starsCheckerFlag) {
+                window.clearInterval(starsCheckerFlag)
+              }
+              var mostStarred, leastStarred
+              if (userTwoStarredRepos.length > userOneStarredRepos.length) {
+                mostStarred = userTwoStarredRepos
+                leastStarred = userOneStarredRepos
+              } else {
+                mostStarred = userOneStarredRepos
+                leastStarred =userTwoStarredRepos
+              }
+
+              leastStarred.map((item, index) => {
+                if (mostStarred.map(val => val.html_url).indexOf(item.html_url) > -1) {
+                  let star = {}
+                  star.name = item.name
+                  star.description = item.description
+                  star.htmlurl = item.html_url
+                  star.gazerscount = item.stargazers_count
+                  star.language = item.language
+                  mutualStarred.push(star)
+                }
+              })
+
+              userOneStarredRepos.map((item, index) => {
+                if (mutualStarred.map(val => val.htmlurl).indexOf(item.html_url) === -1) {
+                  let star = {}
+                  star.name = item.name
+                  star.description = item.description
+                  star.htmlurl = item.html_url
+                  star.gazerscount = item.stargazers_count
+                  star.language = item.language
+                  userOneStarred.push(star)
+                }
+              })
+
+              userTwoStarredRepos.map((item, index) => {
+                if (mutualStarred.map(val => val.htmlurl).indexOf(item.html_url) === -1) {
+                  let star = {}
+                  star.name = item.name
+                  star.description = item.description
+                  star.htmlurl = item.html_url
+                  star.gazerscount = item.stargazers_count
+                  star.language = item.language
+                  userTwoStarred.push(star)
+                }
+              })
+
+              let starsInfo = {
+                mutualStarred,
+                userOneStarred,
+                userTwoStarred
+              }
+              this.getStarsInfo(starsInfo)
+              this.showSpinner = false
             }
-            var mostStarred, leastStarred
-            if (userTwoStarredRepos.length > userOneStarredRepos.length) {
-              mostStarred = userTwoStarredRepos
-              leastStarred = userOneStarredRepos
-            } else {
-              mostStarred = userOneStarredRepos
-              leastStarred =userTwoStarredRepos
+          }.bind(this)
+          var starsCheckerFlag = window.setInterval(isStarsFetchFinished, 300)
+        }
+        if (getTabSectionName === 'followers') {
+          var isFollowersFetchFinished = function () {
+            if (flagOneFollowersFetchFinished && flagTwoFollowersFetchFinished) {
+              let mutualFollowers = [],
+                  uniqueUserOneFollowers = [],
+                  uniqueUserTwoFollowers = []
+              if (followersCheckerFlag) {
+                window.clearInterval(followersCheckerFlag)
+              }
+              var mostFollowers, leastFollowers
+              if (userTwoFollowers.length > userOneFollowers.length) {
+                mostFollowers = userTwoFollowers
+                leastFollowers = userOneFollowers
+              } else {
+                mostFollowers = userOneFollowers
+                leastFollowers = userTwoFollowers
+              }
+
+              leastFollowers.map((item, index) => {
+                if (mostFollowers.map(val => val.html_url).indexOf(item.html_url) > -1) {
+                  let follower = {}
+                  follower.name = item.login
+                  follower.htmlurl = item.html_url
+                  mutualFollowers.push(follower)
+                }
+              })
+              userOneFollowers.map((item, index) => {
+                if (mutualFollowers.map(val => val.htmlurl).indexOf(item.html_url) === -1) {
+                  let follower = {}
+                  follower.name = item.login
+                  follower.htmlurl = item.html_url
+                  uniqueUserOneFollowers.push(follower)
+                }
+              })
+              userTwoFollowers.map((item, index) => {
+                if (mutualFollowers.map(val => val.htmlurl).indexOf(item.html_url) === -1) {
+                  let follower = {}
+                  follower.name = item.login
+                  follower.htmlurl = item.html_url
+                  uniqueUserTwoFollowers.push(follower)
+                }
+              })
+
+              let followersInfo = {
+                mutualFollowers,
+                userOneFollowers: uniqueUserOneFollowers,
+                userTwoFollowers: uniqueUserTwoFollowers
+              }
+
+              this.getFollowersInfo(followersInfo)
+              this.showSpinner = false
             }
+          }.bind(this)
+          var followersCheckerFlag = window.setInterval(isFollowersFetchFinished, 300)
+        }
 
-            leastStarred.map((item, index) => {
-              if (mostStarred.map(val => val.html_url).indexOf(item.html_url) > -1) {
-                let star = {}
-                star.name = item.name
-                star.description = item.description
-                star.htmlurl = item.html_url
-                star.gazerscount = item.stargazers_count
-                star.language = item.language
-                this.mutualStarred.push(star)
-              }
-            })
-
-            userOneStarredRepos.map((item, index) => {
-              if (this.mutualStarred.map(val => val.htmlurl).indexOf(item.html_url) === -1) {
-                let star = {}
-                star.name = item.name
-                star.description = item.description
-                star.htmlurl = item.html_url
-                star.gazerscount = item.stargazers_count
-                star.language = item.language
-                this.userOneStarred.push(star)
-              }
-            })
-
-            userTwoStarredRepos.map((item, index) => {
-              if (this.mutualStarred.map(val => val.htmlurl).indexOf(item.html_url) === -1) {
-                let star = {}
-                star.name = item.name
-                star.description = item.description
-                star.htmlurl = item.html_url
-                star.gazerscount = item.stargazers_count
-                star.language = item.language
-                this.userTwoStarred.push(star)
-              }
-            })
-            this.showSpinner = false
-          }
-
-          if (getTabSectionName === 'followers' && flagOneFollowersFetchFinished && flagTwoFollowersFetchFinished) {
-            if (checker) {
-              window.clearInterval(checker)
-            }
-            var mostFollowers, leastFollowers
-            if (userTwoFollowers.length > userOneFollowers.length) {
-              mostFollowers = userTwoFollowers
-              leastFollowers = userOneFollowers
-            } else {
-              mostFollowers = userOneFollowers
-              leastFollowers = userTwoFollowers
-            }
-
-            leastFollowers.map((item, index) => {
-              if (mostFollowers.map(val => val.html_url).indexOf(item.html_url) > -1) {
-                let follower = {}
-                follower.name = item.login
-                follower.htmlurl = item.html_url
-                this.mutualFollowers.push(follower)
-              }
-            })
-
-            userOneFollowers.map((item, index) => {
-              if (this.mutualFollowers.map(val => val.htmlurl).indexOf(item.html_url) === -1) {
-                let follower = {}
-                follower.name = item.name
-                follower.htmlurl = item.html_url
-                this.userOneFollowers.push(follower)
-              }
-            })
-
-            userTwoFollowers.map((item, index) => {
-              if (this.mutualFollowers.map(val => val.htmlurl).indexOf(item.html_url) === -1) {
-                let follower = {}
-                follower.name = item.name
-                follower.htmlurl = item.html_url
-                this.userTwoFollowers.push(follower)
-              }
-            })
-            this.showSpinner = false
-          }
-        }.bind(this)
-        var checker = window.setInterval(isFinished, 300)
       } else  if (userOne === '' || userTwo === '') {
         if (userOne === '') {
           this.errorMessageFieldOne = 'Input Field should not be empty.'
