@@ -147,6 +147,39 @@
       <div v-if="tabSelectionIndex === 1">
         <vue-simple-spinner v-if="followersResult !== undefined && followersResult.length <= 0 && showSpinner" line-fg-color="#7bc96f"></vue-simple-spinner>
         <div id="venn" v-show="(followersResult !== undefined && followersResult.length > 0 || mutualFollowers.length > 0 || userOneFollowers.length > 0 || userTwoFollowers > 0)"></div>
+        <div class="container-lg clearfix" v-if="(followersResult !== undefined && followersResult.length > 0 || mutualFollowers.length > 0 || userOneFollowers.length > 0 || userTwoFollowers > 0)">
+          <div class="col-6 float-left p-4">
+          </div>
+          <div class="col-3 float-left p-4">
+            <input class="form-control" v-model="searchFollowers" style="width: 100%" type="text" placeholder="Search followers..">
+          </div>
+           <div class="col-3 float-left p-4">
+            <div class="select-menu js-menu-container js-select-menu">
+              <button class="btn select-menu-button js-menu-target" type="button" aria-haspopup="true" aria-expanded="false" style="width: 100%">
+                Sort: {{ sortFollowers }}
+              </button>
+              <div class="select-menu-modal-holder">
+                <div class="select-menu-modal js-menu-content">
+                  <div class="select-menu-header js-navigation-enable" tabindex="-1">
+                    <button class="btn-link close-button js-menu-close" type="button"><octicon name="x" aria-label="Close menu"></octicon></button>
+                    <span class="select-menu-title">Sort options:</span>
+                  </div>
+                  <div class="select-menu-list js-navigation-container">
+                    <a @click.prevent.stop="onSelectFollowersSort('Default')" class="select-menu-item selected js-navigation-item">
+                      <span class="select-menu-item-text js-select-button-text">Default</span>
+                    </a>
+                    <a @click.prevent.stop="onSelectFollowersSort('Most followers')" class="select-menu-item selected js-navigation-item">
+                      <span class="select-menu-item-text js-select-button-text">Most followers</span>
+                    </a>
+                    <a @click.prevent.stop="onSelectFollowersSort('Least followers')" class="select-menu-item selected js-navigation-item">
+                      <span class="select-menu-item-text js-select-button-text">Least followers</span>
+                    </a>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
         <div v-for="(follower, index) in followersResult" class="col-4 float-left p-2" :key="index">
           <div class="Box">
             <div class="Box-row d-flex flex-wrap flex-items-center">
@@ -219,7 +252,9 @@ export default {
       uniqueLanguages: [],
       selectedLanguage: '',
       sortRepos: 'Default',
+      sortFollowers: 'Default',
       searchRepos: '',
+      searchFollowers: '',
       tabSelectionIndex: 0,
       items: [
         { message: 'Stars', name: 'starred' },
@@ -259,52 +294,87 @@ export default {
       }
 
       let result = Array.prototype.concat.apply([], finalFollowersList)
+      if (this.sortFollowers !== 'Default') {
+        if (this.sortFollowers === 'Most followers') {
+          result = result.slice().sort(function (a, b) {
+            return b - a
+          })
+        } else {
+          result = result.slice().sort(function (a, b) {
+            return a - b
+          })
+        }
+      }
+      if (this.searchFollowers !== '') {
+        let searchedFollowers = []
+        result.map((res) => {
+          if (res.name.indexOf(this.searchFollowers) !== -1) {
+            searchedFollowers.push(res)
+          }
+        })
+        return searchedFollowers
+      }
       return result
     },
     starsResult () {
       let userOneStarred = this.userOneStarred
       let userTwoStarred = this.userTwoStarred
       let mutualStarred = this.mutualStarred
-      let starList = [], finalStarList=[], searchedRepos=[], obj
+      let starsList = [], finalStarsList=[], obj
 
       // Based on selecting the 'Venn diagram selection' area the starred repos will be pushed into the star list array
-      // this.pushStarReposToList(starList)
+      // this.pushStarReposToList(starsList)
       if (this.leftSetPortion) {
-        starList.push({ 'arr': userOneStarred, 'key': 'left' })
+        starsList.push({ 'arr': userOneStarred, 'key': 'left' })
       }
       if (this.rightSetPortion) {
-        starList.push({ 'arr': userTwoStarred, 'key': 'right' })
+        starsList.push({ 'arr': userTwoStarred, 'key': 'right' })
       }
       if (this.intersectionPortion) {
-        starList.push({ 'arr': mutualStarred, 'key': 'center' })
+        starsList.push({ 'arr': mutualStarred, 'key': 'center' })
       }
 
       // Based on unselecting the 'Venn diagram selection' area the starred repos will be popped from the star list array
-      // this.popStarReposFromList(starList)
-      let starListKey = starList.map(val => val.key)
-      if (this.leftSetPortion === false && starListKey.indexOf('left') !== -1) {
-        starList.splice(starListKey.indexOf('left'), 1)
+      // this.popStarReposFromList(starsList)
+      let starsListKey = starsList.map(val => val.key)
+      if (this.leftSetPortion === false && starsListKey.indexOf('left') !== -1) {
+        starsList.splice(starsListKey.indexOf('left'), 1)
       }
-      if (this.rightSetPortion === false && starListKey.indexOf('right') !== -1) {
-        starList.splice(starListKey.indexOf('right'), 1)
+      if (this.rightSetPortion === false && starsListKey.indexOf('right') !== -1) {
+        starsList.splice(starsListKey.indexOf('right'), 1)
       }
-      if (this.intersectionPortion === false && starListKey.indexOf('center') !== -1) {
-        starList.splice(starListKey.indexOf('center'), 1)
-      }
-
-      // 'finalStarList' contains the final list of starred repos
-      for (let i in starList) {
-        finalStarList.push(starList[i].arr)
+      if (this.intersectionPortion === false && starsListKey.indexOf('center') !== -1) {
+        starsList.splice(starsListKey.indexOf('center'), 1)
       }
 
-      let result = Array.prototype.concat.apply([], finalStarList)
+      // 'finalStarsList' contains the final list of starred repos
+      for (let i in starsList) {
+        finalStarsList.push(starsList[i].arr)
+      }
+
+      let result = Array.prototype.concat.apply([], finalStarsList)
 
       if (this.sortRepos !== 'Default') {
-        this.onSortRepos()
+        // this.onSortRepos(result)
+        if (this.sortRepos === 'Most stars') {
+          result = result.slice().sort(function (a, b) {
+            return b.gazerscount - a.gazerscount
+          })
+        } else {
+          result = result.slice().sort(function (a, b) {
+            return a.gazerscount - b.gazerscount
+          })
+        }
       }
 
       if (this.searchRepos !== '') {
-        this.onSearchRepos()
+        let searchedRepos = []
+        result.map((res) => {
+          if (res.name.indexOf(this.searchRepos) !== -1) {
+            searchedRepos.push(res)
+          }
+        })
+        return searchedRepos
       }
 
       result.forEach((l) => {
@@ -313,7 +383,14 @@ export default {
         }
       })
       if (this.selectedLanguage !== '') {
-        this.onFilterRepos()
+        // this.onFilterRepos(result)
+        let filteredRepos = []
+        result.map((res) => {
+          if (res.language !== null && res.language === this.selectedLanguage) {
+            filteredRepos.push(res)
+          }
+        })
+        return filteredRepos
       } else {
         return result
       }
@@ -383,34 +460,35 @@ export default {
   },
   methods: {
     ...mapActions(['getStarsInfo', 'getFollowersInfo']),
-    onSortRepos () {
-      if (this.sortRepos === 'Most stars') {
-        result = result.slice().sort(function (a, b) {
-          return b.gazerscount - a.gazerscount
-        })
-      } else {
-        result = result.slice().sort(function (a, b) {
-          return a.gazerscount - b.gazerscount
-        })
-      }
-    },
-    onSearchRepos () {
-      result.map((res) => {
-        if (res.name.indexOf(this.searchRepos) !== -1) {
-          searchedRepos.push(res)
-        }
-      })
-      return searchedRepos
-    },
-    onFilterRepos () {
-      let filteredRepos = []
-        result.map((res) => {
-          if (res.language !== null && res.language === this.selectedLanguage) {
-            filteredRepos.push(res)
-          }
-        })
-        return filteredRepos
-    },
+    // onSortRepos (result) {
+    //   if (this.sortRepos === 'Most stars') {
+    //     result = result.slice().sort(function (a, b) {
+    //       return b.gazerscount - a.gazerscount
+    //     })
+    //   } else {
+    //     result = result.slice().sort(function (a, b) {
+    //       return a.gazerscount - b.gazerscount
+    //     })
+    //   }
+    // },
+    // onSearchRepos (result) {
+    //   let searchedRepos = []
+    //   result.map((res) => {
+    //     if (res.name.indexOf(this.searchRepos) !== -1) {
+    //       searchedRepos.push(res)
+    //     }
+    //   })
+    //   return searchedRepos
+    // },
+    // onFilterRepos (result) {
+    //   let filteredRepos = []
+    //   result.map((res) => {
+    //     if (res.language !== null && res.language === this.selectedLanguage) {
+    //       filteredRepos.push(res)
+    //     }
+    //   })
+    //   return filteredRepos
+    // },
     onTabSelect (index, event) {
       this.tabSelectionIndex = index
       this.fetchDetails(event)
@@ -418,6 +496,10 @@ export default {
     onSelectSort (sort) {
       this.sortRepos = sort
       this.searchRepos = ''
+    },
+    onSelectFollowersSort (sort) {
+      this.sortFollowers = sort
+      this.searchFollowers = ''
     },
     onSelectLang (lang) {
       this.selectedLanguage = lang
@@ -548,6 +630,7 @@ export default {
           }.bind(this)
           var starsCheckerFlag = window.setInterval(isStarsFetchFinished, 300)
         }
+
         if (getTabSectionName === 'followers') {
           var isFollowersFetchFinished = function () {
             if (flagOneFollowersFetchFinished && flagTwoFollowersFetchFinished) {
@@ -571,6 +654,7 @@ export default {
                   let follower = {}
                   follower.name = item.login
                   follower.htmlurl = item.html_url
+                  follower.url = item.url
                   mutualFollowers.push(follower)
                 }
               })
@@ -579,6 +663,7 @@ export default {
                   let follower = {}
                   follower.name = item.login
                   follower.htmlurl = item.html_url
+                  follower.url = item.url
                   uniqueUserOneFollowers.push(follower)
                 }
               })
@@ -587,6 +672,7 @@ export default {
                   let follower = {}
                   follower.name = item.login
                   follower.htmlurl = item.html_url
+                  follower.url = item.url
                   uniqueUserTwoFollowers.push(follower)
                 }
               })
