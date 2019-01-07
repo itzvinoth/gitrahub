@@ -11,8 +11,8 @@ let flagOneStarsFetchFinished = false
 let flagTwoStarsFetchFinished = false
 let flagOneFollowersFetchFinished = false
 let flagTwoFollowersFetchFinished = false
-// this.errorMessageFieldOne = ''
-// this.errorMessageFieldTwo = ''
+this.errorMessageFieldOne = ''
+this.errorMessageFieldTwo = ''
 
 let config = {
 	headers: {'Authorization': 'token 9fe7d8694b28e3dce90adc73afb992e60ca2d7d7'}
