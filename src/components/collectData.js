@@ -33,10 +33,9 @@ const collectUserOnestarredRepos = (username) => {
 				flagOneStarsFetchFinished = true
 			}
 		})
+	}).catch(() => {
+		this.errorMessageFieldOne = 'User '+username+' not found'
 	})
-	// .catch(() => {
-	// 	this.errorMessageFieldOne = 'User '+username+' not found'
-	// })
 }
 
 const collectUserTwostarredRepos = (username) => {
@@ -55,10 +54,9 @@ const collectUserTwostarredRepos = (username) => {
 				flagTwoStarsFetchFinished = true
 			}
 	  	})
+	}).catch(() => {
+		this.errorMessageFieldTwo = 'User '+username+' not found'
 	})
-	// .catch(() => {
-	// 	this.errorMessageFieldTwo = 'User '+username+' not found'
-	// })
 }
 
 const collectUserOneFollowers = (username) => {
@@ -68,7 +66,20 @@ const collectUserOneFollowers = (username) => {
 		response.forEach((res) => {
 			if (res.data.length > 0) {
 				res.data.forEach((result) => {
-					userOneFollowers.push(result)
+					Promise.all([
+						axios.get(result.url, config)
+					]).then(resp => {
+						resp.forEach(r => {
+							let obj = {}
+							if (r.data.followers > 0) {
+								obj.followersCount = r.data.followers
+							} else {
+								obj.followersCount = 0
+							}
+							obj.res = result
+							userOneFollowers.push(obj)
+						})
+					})
 				})
 				countFollowersOne++
 				collectUserOneFollowers(username)
@@ -76,10 +87,9 @@ const collectUserOneFollowers = (username) => {
 				flagOneFollowersFetchFinished = true
 			}
 		})
+	}).catch(() => {
+		this.errorMessageFieldOne = 'User ' + userOne + ' not found'
 	})
-	// .catch(() => {
-	// 	this.errorMessageFieldOne = 'User ' + userOne + ' not found'
-	// })
 }
 
 const collectUserTwoFollowers = (username) => {
@@ -89,7 +99,20 @@ const collectUserTwoFollowers = (username) => {
 		response.forEach((res) => {
 			if (res.data.length > 0) {
 				res.data.forEach((result) => {
-					userTwoFollowers.push(result)
+					Promise.all([
+						axios.get(result.url, config)
+					]).then(resp => {
+						resp.forEach(r => {
+							let obj = {}
+							if (r.data.followers > 0) {
+								obj.followersCount = r.data.followers
+							} else {
+								obj.followersCount = 0
+							}
+							obj.res = result
+							userTwoFollowers.push(obj)
+						})
+					})
 				})
 				countFollowersTwo++
 				collectUserTwoFollowers(username)
@@ -97,10 +120,9 @@ const collectUserTwoFollowers = (username) => {
 				flagTwoFollowersFetchFinished = true
 			}
 		})
+	}).catch(() => {
+		this.errorMessageFieldTwo = 'User ' + userTwo + ' not found'
 	})
-	// .catch(() => {
-	// 	this.errorMessageFieldTwo = 'User ' + userTwo + ' not found'
-	// })
 }
 
 const collectStarsData = {

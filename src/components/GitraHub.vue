@@ -188,7 +188,7 @@
               </div>
               <div class="clearfix">
                 <a class="btn btn-sm" target='_blank' :href="`${follower.htmlurl}`" role="button">
-                  <octicon name="link-external"></octicon>
+                  <span class="Counter">{{ follower.count }}</span>  <octicon name="link-external"></octicon>
                 </a>
               </div>
             </div>
@@ -264,7 +264,7 @@ export default {
     }
   },
   computed: {
-    ...mapGetters(['mutualStarred', 'userOneStarred', 'userTwoStarred', 'mutualFollowers', 'userOneFollowers', 'userTwoFollowers']),
+    ...mapGetters(['mutualStarred', 'userOneStarred', 'userTwoStarred', 'mutualFollowers', 'userOneFollowers', 'userTwoFollowers', 'errorMessageFieldOne', 'errorMessageFieldTwo']),
     followersResult () {
       let userOneFollowers = this.userOneFollowers
       let userTwoFollowers = this.userTwoFollowers
@@ -297,11 +297,11 @@ export default {
       if (this.sortFollowers !== 'Default') {
         if (this.sortFollowers === 'Most followers') {
           result = result.slice().sort(function (a, b) {
-            return b - a
+            return b.count - a.count
           })
         } else {
           result = result.slice().sort(function (a, b) {
-            return a - b
+            return a.count - b.count
           })
         }
       }
@@ -650,29 +650,32 @@ export default {
               }
 
               leastFollowers.map((item, index) => {
-                if (mostFollowers.map(val => val.html_url).indexOf(item.html_url) > -1) {
+                if (mostFollowers.map(val => val.res.html_url).indexOf(item.res.html_url) > -1) {
                   let follower = {}
-                  follower.name = item.login
-                  follower.htmlurl = item.html_url
-                  follower.url = item.url
+                  follower.name = item.res.login
+                  follower.htmlurl = item.res.html_url
+                  follower.url = item.res.url
+                  follower.count = item.followersCount
                   mutualFollowers.push(follower)
                 }
               })
               userOneFollowers.map((item, index) => {
-                if (mutualFollowers.map(val => val.htmlurl).indexOf(item.html_url) === -1) {
+                if (mutualFollowers.map(val => val.htmlurl).indexOf(item.res.html_url) === -1) {
                   let follower = {}
-                  follower.name = item.login
-                  follower.htmlurl = item.html_url
-                  follower.url = item.url
+                  follower.name = item.res.login
+                  follower.htmlurl = item.res.html_url
+                  follower.url = item.res.url
+                  follower.count = item.followersCount
                   uniqueUserOneFollowers.push(follower)
                 }
               })
               userTwoFollowers.map((item, index) => {
-                if (mutualFollowers.map(val => val.htmlurl).indexOf(item.html_url) === -1) {
+                if (mutualFollowers.map(val => val.htmlurl).indexOf(item.res.html_url) === -1) {
                   let follower = {}
-                  follower.name = item.login
-                  follower.htmlurl = item.html_url
-                  follower.url = item.url
+                  follower.name = item.res.login
+                  follower.htmlurl = item.res.html_url
+                  follower.url = item.res.url
+                  follower.count = item.followersCount
                   uniqueUserTwoFollowers.push(follower)
                 }
               })
