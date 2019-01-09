@@ -32,14 +32,14 @@
           <dl class="form-group errored">
             vinothkumarrenganathan
             <dd><input class="form-control" type="text" v-model="inputone" placeholder="Enter github username or profile URL"></dd>
-            <dd class="error" id="form-error-text" v-if="errorMessageFieldOne !== ''"> {{ errorMessageFieldOne }} </dd>
+            <dd class="error" id="form-error-text" v-if="(errorMessageFieldOne !== undefined && errorMessageFieldOne !== '')"> {{ errorMessageFieldOne }} </dd>
           </dl>
         </div>
         <div class="col-6 float-left border p-6">
           <dl class="form-group errored">
             Rafi993
             <dd><input class="form-control" type="text" v-model="inputtwo" placeholder="Enter github username or profile URL"></dd>
-            <dd class="error" id="form-error-text" v-if="errorMessageFieldTwo !== ''"> {{ errorMessageFieldTwo }} </dd>
+            <dd class="error" id="form-error-text" v-if="(errorMessageFieldTwo !== undefined && errorMessageFieldTwo !== '')"> {{ errorMessageFieldTwo }} </dd>
           </dl>
         </div>
       </div>
@@ -243,8 +243,6 @@ export default {
       inputone: '',
       inputtwo: '',
       showSpinner: false,
-      errorMessageFieldOne: '',
-      errorMessageFieldTwo: '',
       flashBanner: '',
       intersectionPortion: true,
       leftSetPortion: false,
@@ -559,13 +557,6 @@ export default {
         if (getTabSectionName === 'starred') {
           collectStarsData.collectUserOnestarredRepos(userOne)
           collectStarsData.collectUserTwostarredRepos(userTwo)
-        }
-        if (getTabSectionName === 'followers') {
-          collectFollowersData.collectUserOneFollowers(userOne)
-          collectFollowersData.collectUserTwoFollowers(userTwo)
-        }
-
-        if (getTabSectionName === 'starred') {
           var isStarsFetchFinished = function () {
             if (flagOneStarsFetchFinished && flagTwoStarsFetchFinished) {
               let mutualStarred = [],
@@ -630,8 +621,9 @@ export default {
           }.bind(this)
           var starsCheckerFlag = window.setInterval(isStarsFetchFinished, 300)
         }
-
         if (getTabSectionName === 'followers') {
+          collectFollowersData.collectUserOneFollowers(userOne)
+          collectFollowersData.collectUserTwoFollowers(userTwo)
           var isFollowersFetchFinished = function () {
             if (flagOneFollowersFetchFinished && flagTwoFollowersFetchFinished) {
               let mutualFollowers = [],

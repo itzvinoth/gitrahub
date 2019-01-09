@@ -22,9 +22,9 @@ const collectUserOnestarredRepos = (username) => {
 	Promise.all([
 	  	axios.get('https://api.github.com/users/'+username+'/starred?page='+countStarsOne+'&per_page=100', config)
 	]).then(response => {
-		response.forEach((res) => {
+		response.forEach(res => {
 			if (res.data.length > 0) {
-				res.data.forEach((result) => {
+				res.data.forEach(result => {
 					userOneStarredRepos.push(result)
 				})
 				countStarsOne++
@@ -34,7 +34,7 @@ const collectUserOnestarredRepos = (username) => {
 			}
 		})
 	}).catch(() => {
-		this.errorMessageFieldOne = 'User '+username+' not found'
+		this.errorMessageFieldOne = 'Either you have misspelled the name or the User '+username+' you are seaching is not found'
 	})
 }
 
@@ -42,10 +42,10 @@ const collectUserTwostarredRepos = (username) => {
 	Promise.all([
 		axios.get('https://api.github.com/users/'+username+'/starred?page='+countStarsTwo+'&per_page=100', config)
 	]).then(response => {
-	  	response.forEach((res) => {
+	  	response.forEach(res => {
 			if (res.data.length > 0) {
 				// userOneStarredRepos.push(res.data)
-				res.data.forEach((result) => {
+				res.data.forEach(result => {
 					userTwoStarredRepos.push(result)
 				})
 				countStarsTwo++
@@ -55,7 +55,7 @@ const collectUserTwostarredRepos = (username) => {
 			}
 	  	})
 	}).catch(() => {
-		this.errorMessageFieldTwo = 'User '+username+' not found'
+		this.errorMessageFieldTwo = 'Either you have misspelled the name or the User '+username+' you are seaching is not found'
 	})
 }
 
@@ -63,9 +63,9 @@ const collectUserOneFollowers = (username) => {
 	Promise.all([
 		axios.get('https://api.github.com/users/' + username + '/followers?page=' + countFollowersOne + '&per_page=100', config)
 	]).then(response => {
-		response.forEach((res) => {
+		response.forEach(res => {
 			if (res.data.length > 0) {
-				res.data.forEach((result) => {
+				res.data.forEach(result => {
 					Promise.all([
 						axios.get(result.url, config)
 					]).then(resp => {
@@ -88,7 +88,7 @@ const collectUserOneFollowers = (username) => {
 			}
 		})
 	}).catch(() => {
-		this.errorMessageFieldOne = 'User ' + userOne + ' not found'
+		this.errorMessageFieldOne = 'Either you have misspelled the name or the User '+username+' you are seaching is not found'
 	})
 }
 
@@ -96,9 +96,9 @@ const collectUserTwoFollowers = (username) => {
 	Promise.all([
 		axios.get('https://api.github.com/users/' + username + '/followers?page=' + countFollowersTwo + '&per_page=100', config)
 	]).then(response => {
-		response.forEach((res) => {
+		response.forEach(res => {
 			if (res.data.length > 0) {
-				res.data.forEach((result) => {
+				res.data.forEach(result => {
 					Promise.all([
 						axios.get(result.url, config)
 					]).then(resp => {
@@ -121,7 +121,7 @@ const collectUserTwoFollowers = (username) => {
 			}
 		})
 	}).catch(() => {
-		this.errorMessageFieldTwo = 'User ' + userTwo + ' not found'
+		this.errorMessageFieldTwo = 'Either you have misspelled the name or the User '+username+' you are seaching is not found'
 	})
 }
 

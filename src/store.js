@@ -45,7 +45,6 @@ const actions = {
 		commit("mutateStarsInfo", { data })
 	},
 	getFollowersInfo ({ commit, state }, data) {
-		console.log(data)
 		commit("mutateFollowersInfo", { data })
 	}
 }
