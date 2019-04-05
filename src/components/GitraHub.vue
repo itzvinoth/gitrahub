@@ -21,6 +21,7 @@
       </div>
     </div> -->
     <div>
+      <!-- <date-picker range :format="format" :lang="'en'" :not-before="'2017-04-01'" :not-after="'2019-12-31'" placeholder="To date"></date-picker> -->
       <octicon name="mark-github" height="48" width="48" color="#95aebb"></octicon>
       <div class="mb-2">
         <!-- <p class="h1"><span style="color: #95aebb">Git</span><span style="color: #1775d0">ra</span><span style="color: #95aebb">hub</span></p> -->
@@ -30,14 +31,14 @@
       <div class="container-lg clearfix">
         <div class="col-6 float-left border p-6">
           <dl class="form-group errored">
-            vinothkumarrenganathan
+            <!-- vinothkumarrenganathan -->
             <dd><input class="form-control" type="text" v-model="inputone" placeholder="Enter github username or profile URL"></dd>
             <dd class="error" id="form-error-text" v-if="(errorMessageFieldOne !== undefined && errorMessageFieldOne !== '')"> {{ errorMessageFieldOne }} </dd>
           </dl>
         </div>
         <div class="col-6 float-left border p-6">
           <dl class="form-group errored">
-            Rafi993
+            <!-- Rafi993 -->
             <dd><input class="form-control" type="text" v-model="inputtwo" placeholder="Enter github username or profile URL"></dd>
             <dd class="error" id="form-error-text" v-if="(errorMessageFieldTwo !== undefined && errorMessageFieldTwo !== '')"> {{ errorMessageFieldTwo }} </dd>
           </dl>
@@ -46,14 +47,13 @@
     </form>
     <div class="container-lg clearfix">
       <div class="col-11 m-6">
-        <button @click="fetchDetails($event)" type="submit" class="btn btn-primary">Find shared interest</button>
+        <button @click="fetchDetails($event)" type="submit" class="btn btn-primary" :disabled="interestButtonDisabled">Find mutual interests</button>
       </div>
     </div>
 
     <div class="container-lg clearfix">
-
       <!-- today -->
-      <nav class="UnderlineNav UnderlineNav--full" aria-label="Foo bar" v-if="starsResult !== undefined && starsResult.length > 0">
+      <nav class="UnderlineNav UnderlineNav--full" aria-label="Foo bar" v-if="((starsResult !== undefined && starsResult.length > 0) || (followersResult !== undefined && followersResult.length > 0))">
         <div class="container-lg UnderlineNav-container">
           <div class="UnderlineNav-body">
             <!-- <a href="#" class="UnderlineNav-item">Stars
@@ -195,6 +195,57 @@
           </div>
         </div>
       </div>
+      <div v-if="tabSelectionIndex === 2">
+        <vue-simple-spinner v-if="followingsResult !== undefined && followingsResult.length <= 0 && showSpinner" line-fg-color="#7bc96f"></vue-simple-spinner>
+        <div id="venn" v-show="(followingsResult !== undefined && followingsResult.length > 0 || mutualFollowings.length > 0 || userOneFollowings.length > 0 || userTwoFollowings > 0)"></div>
+        <div class="container-lg clearfix" v-if="(followingsResult !== undefined && followingsResult.length > 0 || mutualFollowings.length > 0 || userOneFollowings.length > 0 || userTwoFollowings > 0)">
+          <div class="col-6 float-left p-4">
+          </div>
+          <div class="col-3 float-left p-4">
+            <input class="form-control" v-model="searchFollowings" style="width: 100%" type="text" placeholder="Search followings..">
+          </div>
+           <div class="col-3 float-left p-4">
+            <div class="select-menu js-menu-container js-select-menu">
+              <button class="btn select-menu-button js-menu-target" type="button" aria-haspopup="true" aria-expanded="false" style="width: 100%">
+                Sort: {{ sortFollowings }}
+              </button>
+              <div class="select-menu-modal-holder">
+                <div class="select-menu-modal js-menu-content">
+                  <div class="select-menu-header js-navigation-enable" tabindex="-1">
+                    <button class="btn-link close-button js-menu-close" type="button"><octicon name="x" aria-label="Close menu"></octicon></button>
+                    <span class="select-menu-title">Sort options:</span>
+                  </div>
+                  <div class="select-menu-list js-navigation-container">
+                    <a @click.prevent.stop="onSelectFollowingsSort('Default')" class="select-menu-item selected js-navigation-item">
+                      <span class="select-menu-item-text js-select-button-text">Default</span>
+                    </a>
+                    <a @click.prevent.stop="onSelectFollowingsSort('Most followings')" class="select-menu-item selected js-navigation-item">
+                      <span class="select-menu-item-text js-select-button-text">Most followings</span>
+                    </a>
+                    <a @click.prevent.stop="onSelectFollowingsSort('Least followings')" class="select-menu-item selected js-navigation-item">
+                      <span class="select-menu-item-text js-select-button-text">Least followings</span>
+                    </a>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div v-for="(follower, index) in followingsResult" class="col-4 float-left p-2" :key="index">
+          <div class="Box">
+            <div class="Box-row d-flex flex-wrap flex-items-center">
+              <div class="flex-auto">
+                <strong>{{ (follower.name.length > 22) ? follower.name.slice(0, 22).concat('..') : follower.name }}</strong>
+              </div>
+              <div class="clearfix">
+                <a class="btn btn-sm" target='_blank' :href="`${follower.htmlurl}`" role="button">
+                  <span class="Counter">{{ follower.count }}</span>  <octicon name="link-external"></octicon>
+                </a>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
 </template>
@@ -211,21 +262,33 @@ import 'vue-octicon/icons/x'
 import 'vue-octicon/icons/info'
 import 'vue-octicon/icons/mark-github'
 import { intersection } from '../assets/js/intersection'
+// import DatePicker from '../assets/js/datepicker'
 import * as d3 from 'd3'
 import store from '../store'
 import { mapGetters, mapActions } from 'vuex'
-import {
-  collectStarsData,
-  collectFollowersData,
-  userOneStarredRepos,
-  userTwoStarredRepos,
-  flagOneStarsFetchFinished,
-  flagTwoStarsFetchFinished,
-	userOneFollowers,
-	userTwoFollowers,
-  flagOneFollowersFetchFinished,
-  flagTwoFollowersFetchFinished
-} from './collectData.js'
+
+let countStarsOne
+let countStarsTwo
+let userOneStarredRepos
+let userTwoStarredRepos
+let flagOneStarsFetchFinished
+let flagTwoStarsFetchFinished
+let countFollowersOne
+let countFollowersTwo
+let userOneFollowers
+let userTwoFollowers
+let flagOneFollowersFetchFinished
+let flagTwoFollowersFetchFinished
+let countFollowingsOne
+let countFollowingsTwo
+let userOneFollowings
+let userTwoFollowings
+let flagOneFollowingsFetchFinished
+let flagTwoFollowingsFetchFinished
+
+let config = {
+	headers: {'Authorization': 'token 9fe7d8694b28e3dce90adc73afb992e60ca2d7d7'}
+}
 
 // Generate github tokens under this URL. Once you landed the page create your
 // own token using `Generate new token` button on the right side of your page..
@@ -237,6 +300,7 @@ export default {
   components: {
     'vue-simple-spinner': Spinner,
     'octicon': Octicon
+    // 'date-picker': DatePicker
   },
   data () {
     return {
@@ -251,9 +315,12 @@ export default {
       selectedLanguage: '',
       sortRepos: 'Default',
       sortFollowers: 'Default',
+      sortFollowings: 'Default',
       searchRepos: '',
       searchFollowers: '',
+      searchFollowings: '',
       tabSelectionIndex: 0,
+      interestButtonDisabled: false,
       items: [
         { message: 'Stars', name: 'starred' },
         { message: 'Followers', name: 'followers' },
@@ -261,8 +328,72 @@ export default {
       ]
     }
   },
+  watch: {
+    inputone: function (newVal, oldVal) {
+      if (newVal !== oldVal) {
+        this.inputFieldChange()
+
+      }
+    },
+    inputtwo: function (newVal, oldVal) {
+      if (newVal !== oldVal) {
+        this.inputFieldChange()
+      }
+    }
+  },
   computed: {
-    ...mapGetters(['mutualStarred', 'userOneStarred', 'userTwoStarred', 'mutualFollowers', 'userOneFollowers', 'userTwoFollowers', 'errorMessageFieldOne', 'errorMessageFieldTwo']),
+    ...mapGetters(['mutualStarred', 'userOneStarred', 'userTwoStarred', 'mutualFollowers', 'userOneFollowers', 'userTwoFollowers', 'mutualFollowings', 'userOneFollowings', 'userTwoFollowings', 'errorMessageFieldOne', 'errorMessageFieldTwo']),
+    followingsResult () {
+      let userOneFollowings = this.userOneFollowings
+      let userTwoFollowings = this.userTwoFollowings
+      let mutualFollowings = this.mutualFollowings
+      let followingsList = [], finalFollowingsList = []
+      if (this.leftSetPortion) {
+        followingsList.push({ 'arr': userOneFollowings, 'key': 'left' })
+      }
+      if (this.rightSetPortion) {
+        followingsList.push({ 'arr': userTwoFollowings, 'key': 'right' })
+      }
+      if (this.intersectionPortion) {
+        followingsList.push({ 'arr': mutualFollowings, 'key': 'center' })
+      }
+      let followingsListKey = followingsList.map(val => val.key)
+      if (this.leftSetPortion === false && followingsListKey.indexOf('left') !== -1) {
+        followingsList.splice(followingsListKey.indexOf('left'), 1)
+      }
+      if (this.rightSetPortion === false && followingsListKey.indexOf('right') !== -1) {
+        followingsList.splice(followingsListKey.indexOf('right'), 1)
+      }
+      if (this.intersectionPortion === false && followingsListKey.indexOf('center') !== -1) {
+        followingsList.splice(followingsListKey.indexOf('center'), 1)
+      }
+      for (let i in followingsList) {
+        finalFollowingsList.push(followingsList[i].arr)
+      }
+
+      let result = Array.prototype.concat.apply([], finalFollowingsList)
+      if (this.sortFollowings !== 'Default') {
+        if (this.sortFollowings === 'Most followers') {
+          result = result.slice().sort(function (a, b) {
+            return b.count - a.count
+          })
+        } else {
+          result = result.slice().sort(function (a, b) {
+            return a.count - b.count
+          })
+        }
+      }
+      if (this.searchFollowings !== '') {
+        let searchedFollowings = []
+        result.map((res) => {
+          if (res.name.indexOf(this.searchFollowings) !== -1) {
+            searchedFollowings.push(res)
+          }
+        })
+        return searchedFollowings
+      }
+      return result
+    },
     followersResult () {
       let userOneFollowers = this.userOneFollowers
       let userTwoFollowers = this.userTwoFollowers
@@ -457,36 +588,10 @@ export default {
       .style('fill', '#239a3b').on('click', this.onSelectIntersection)
   },
   methods: {
-    ...mapActions(['getStarsInfo', 'getFollowersInfo']),
-    // onSortRepos (result) {
-    //   if (this.sortRepos === 'Most stars') {
-    //     result = result.slice().sort(function (a, b) {
-    //       return b.gazerscount - a.gazerscount
-    //     })
-    //   } else {
-    //     result = result.slice().sort(function (a, b) {
-    //       return a.gazerscount - b.gazerscount
-    //     })
-    //   }
-    // },
-    // onSearchRepos (result) {
-    //   let searchedRepos = []
-    //   result.map((res) => {
-    //     if (res.name.indexOf(this.searchRepos) !== -1) {
-    //       searchedRepos.push(res)
-    //     }
-    //   })
-    //   return searchedRepos
-    // },
-    // onFilterRepos (result) {
-    //   let filteredRepos = []
-    //   result.map((res) => {
-    //     if (res.language !== null && res.language === this.selectedLanguage) {
-    //       filteredRepos.push(res)
-    //     }
-    //   })
-    //   return filteredRepos
-    // },
+    ...mapActions(['getStarsInfo', 'getFollowersInfo', 'getFollowingsInfo']),
+    inputFieldChange () {
+      this.interestButtonDisabled = false
+    },
     onTabSelect (index, event) {
       this.tabSelectionIndex = index
       this.fetchDetails(event)
@@ -498,6 +603,10 @@ export default {
     onSelectFollowersSort (sort) {
       this.sortFollowers = sort
       this.searchFollowers = ''
+    },
+    onSelectFollowingsSort (sort) {
+      this.sortFollowings = sort
+      this.searchFollowings = ''
     },
     onSelectLang (lang) {
       this.selectedLanguage = lang
@@ -535,7 +644,9 @@ export default {
       this.searchRepos = ''
     },
     fetchDetails (event) {
+      this.interestButtonDisabled = true
       let userOne, userTwo
+
       userOne = (this.inputone.split('/').length > 2) ? this.inputone.split('/')[3] : this.inputone
       userTwo = (this.inputtwo.split('/').length > 2) ? this.inputtwo.split('/')[3] : this.inputtwo
 
@@ -543,6 +654,25 @@ export default {
       userDetails[0] = (userOne.length > 9) ? userOne.slice(0, 7).concat('..') : userOne
       userDetails[1] = (userTwo.length > 9) ? userTwo.slice(0, 7).concat('..') : userTwo
       d3.select('#venn').selectAll('text').text(function (d, i) { return userDetails[i] })
+
+      countStarsOne = 1
+      countStarsTwo = 1
+      userOneStarredRepos = []
+      userTwoStarredRepos = []
+      flagOneStarsFetchFinished = false
+      flagTwoStarsFetchFinished = false
+      countFollowersOne = 1
+      countFollowersTwo = 1
+      userOneFollowers = []
+      userTwoFollowers = []
+      flagOneFollowersFetchFinished = false
+      flagTwoFollowersFetchFinished = false
+      countFollowingsOne = 1
+      countFollowingsTwo = 1
+      userOneFollowings = []
+      userTwoFollowings = []
+      flagOneFollowingsFetchFinished = false
+      flagTwoFollowingsFetchFinished = false
 
       if (userOne !== '' && userTwo !== '') {
         this.uniqueLanguages = []
@@ -555,8 +685,46 @@ export default {
         let getTabSectionName = this.items[this.tabSelectionIndex]['name']
 
         if (getTabSectionName === 'starred') {
-          collectStarsData.collectUserOnestarredRepos(userOne)
-          collectStarsData.collectUserTwostarredRepos(userTwo)
+          collectUserOnestarredRepos(userOne)
+          collectUserTwostarredRepos(userTwo)
+          function collectUserOnestarredRepos(username) {
+            Promise.all([
+                axios.get('https://api.github.com/users/'+username+'/starred?page='+countStarsOne+'&per_page=100', config)
+            ]).then(response => {
+              response.forEach(res => {
+                if (res.data.length > 0) {
+                  res.data.forEach(result => {
+                    userOneStarredRepos.push(result)
+                  })
+                  countStarsOne++
+                  collectUserOnestarredRepos(username)
+                } else {
+                  flagOneStarsFetchFinished = true
+                }
+              })
+            }).catch(() => {
+              this.errorMessageFieldOne = 'Either you have misspelled the name or the User '+username+' you are seaching is not found'
+            })
+          }
+          function collectUserTwostarredRepos(username) {
+            Promise.all([
+              axios.get('https://api.github.com/users/'+username+'/starred?page='+countStarsTwo+'&per_page=100', config)
+            ]).then(response => {
+              response.forEach(res => {
+                if (res.data.length > 0) {
+                  res.data.forEach(result => {
+                    userTwoStarredRepos.push(result)
+                  })
+                  countStarsTwo++
+                  collectUserTwostarredRepos(username)
+                } else {
+                  flagTwoStarsFetchFinished = true
+                }
+              })
+            }).catch(() => {
+              this.errorMessageFieldTwo = 'Either you have misspelled the name or the User '+username+' you are seaching is not found'
+            })
+          }
           var isStarsFetchFinished = function () {
             if (flagOneStarsFetchFinished && flagTwoStarsFetchFinished) {
               let mutualStarred = [],
@@ -565,13 +733,14 @@ export default {
               if (starsCheckerFlag) {
                 window.clearInterval(starsCheckerFlag)
               }
+
               var mostStarred, leastStarred
               if (userTwoStarredRepos.length > userOneStarredRepos.length) {
                 mostStarred = userTwoStarredRepos
                 leastStarred = userOneStarredRepos
               } else {
                 mostStarred = userOneStarredRepos
-                leastStarred =userTwoStarredRepos
+                leastStarred = userTwoStarredRepos
               }
 
               leastStarred.map((item, index) => {
@@ -622,8 +791,72 @@ export default {
           var starsCheckerFlag = window.setInterval(isStarsFetchFinished, 300)
         }
         if (getTabSectionName === 'followers') {
-          collectFollowersData.collectUserOneFollowers(userOne)
-          collectFollowersData.collectUserTwoFollowers(userTwo)
+          collectUserOneFollowers(userOne)
+          collectUserTwoFollowers(userTwo)
+          function collectUserOneFollowers(username) {
+            Promise.all([
+              axios.get('https://api.github.com/users/' + username + '/followers?page=' + countFollowersOne + '&per_page=100', config)
+            ]).then(response => {
+              response.forEach(res => {
+                if (res.data.length > 0) {
+                  res.data.forEach(result => {
+                    Promise.all([
+                      axios.get(result.url, config)
+                    ]).then(resp => {
+                      resp.forEach(r => {
+                        let obj = {}
+                        if (r.data.followers > 0) {
+                          obj.followersCount = r.data.followers
+                        } else {
+                          obj.followersCount = 0
+                        }
+                        obj.res = result
+                        userOneFollowers.push(obj)
+                      })
+                    })
+                  })
+                  countFollowersOne++
+                  collectUserOneFollowers(username)
+                } else {
+                  flagOneFollowersFetchFinished = true
+                }
+              })
+            }).catch(() => {
+              this.errorMessageFieldOne = 'Either you have misspelled the name or the User '+username+' you are seaching is not found'
+            })
+          }
+          function collectUserTwoFollowers(username) {
+            Promise.all([
+              axios.get('https://api.github.com/users/' + username + '/followers?page=' + countFollowersTwo + '&per_page=100', config)
+            ]).then(response => {
+              response.forEach(res => {
+                if (res.data.length > 0) {
+                  res.data.forEach(result => {
+                    Promise.all([
+                      axios.get(result.url, config)
+                    ]).then(resp => {
+                      resp.forEach(r => {
+                        let obj = {}
+                        if (r.data.followers > 0) {
+                          obj.followersCount = r.data.followers
+                        } else {
+                          obj.followersCount = 0
+                        }
+                        obj.res = result
+                        userTwoFollowers.push(obj)
+                      })
+                    })
+                  })
+                  countFollowersTwo++
+                  collectUserTwoFollowers(username)
+                } else {
+                  flagTwoFollowersFetchFinished = true
+                }
+              })
+            }).catch(() => {
+              this.errorMessageFieldTwo = 'Either you have misspelled the name or the User '+username+' you are seaching is not found'
+            })
+          }
           var isFollowersFetchFinished = function () {
             if (flagOneFollowersFetchFinished && flagTwoFollowersFetchFinished) {
               let mutualFollowers = [],
@@ -684,8 +917,135 @@ export default {
           }.bind(this)
           var followersCheckerFlag = window.setInterval(isFollowersFetchFinished, 300)
         }
+        if (getTabSectionName === 'following') {
+          collectUserOneFollowings(userOne)
+          collectUserTwoFollowings(userTwo)
+          function collectUserOneFollowings(username) {
+            Promise.all([
+              axios.get('https://api.github.com/users/' + username + '/following?page=' + countFollowingsOne + '&per_page=100', config)
+            ]).then(response => {
+              response.forEach(res => {
+                if (res.data.length > 0) {
+                  res.data.forEach(result => {
+                    Promise.all([
+                      axios.get(result.url, config)
+                    ]).then(resp => {
+                      resp.forEach(r => {
+                        let obj = {}
+                        if (r.data.following > 0) {
+                          obj.followingsCount = r.data.following
+                        } else {
+                          obj.followingsCount = 0
+                        }
+                        obj.res = result
+                        userOneFollowings.push(obj)
+                      })
+                    })
+                  })
+                  countFollowingsOne++
+                  collectUserOneFollowings(username)
+                } else {
+                  flagOneFollowingsFetchFinished = true
+                }
+              })
+            }).catch(() => {
+              this.errorMessageFieldOne = 'Either you have misspelled the name or the User '+username+' you are seaching is not found'
+            })
+          }
+          function collectUserTwoFollowings(username) {
+            Promise.all([
+              axios.get('https://api.github.com/users/' + username + '/following?page=' + countFollowingsTwo + '&per_page=100', config)
+            ]).then(response => {
+              response.forEach(res => {
+                if (res.data.length > 0) {
+                  res.data.forEach(result => {
+                    Promise.all([
+                      axios.get(result.url, config)
+                    ]).then(resp => {
+                      resp.forEach(r => {
+                        let obj = {}
+                        if (r.data.following > 0) {
+                          obj.followingsCount = r.data.following
+                        } else {
+                          obj.followingsCount = 0
+                        }
+                        obj.res = result
+                        userTwoFollowings.push(obj)
+                      })
+                    })
+                  })
+                  countFollowingsTwo++
+                  collectUserTwoFollowings(username)
+                } else {
+                  flagTwoFollowingsFetchFinished = true
+                }
+              })
+            }).catch(() => {
+              this.errorMessageFieldTwo = 'Either you have misspelled the name or the User '+username+' you are seaching is not found'
+            })
+          }
+          var isFollowingsFetchFinished = function () {
+            if (flagOneFollowingsFetchFinished && flagTwoFollowingsFetchFinished) {
+              let mutualFollowings = [],
+                  uniqueUserOneFollowings = [],
+                  uniqueUserTwoFollowings = []
+              if (followingsCheckerFlag) {
+                window.clearInterval(followingsCheckerFlag)
+              }
+              var mostFollowings, leastFollowings
+              if (userTwoFollowings.length > userOneFollowings.length) {
+                mostFollowings = userTwoFollowings
+                leastFollowings = userOneFollowings
+              } else {
+                mostFollowings = userOneFollowings
+                leastFollowings = userTwoFollowings
+              }
 
-      } else  if (userOne === '' || userTwo === '') {
+              leastFollowings.map((item, index) => {
+                if (mostFollowings.map(val => val.res.html_url).indexOf(item.res.html_url) > -1) {
+                  let following = {}
+                  following.name = item.res.login
+                  following.htmlurl = item.res.html_url
+                  following.url = item.res.url
+                  following.count = item.followingsCount
+                  mutualFollowings.push(following)
+                }
+              })
+              userOneFollowings.map((item, index) => {
+                if (mutualFollowings.map(val => val.htmlurl).indexOf(item.res.html_url) === -1) {
+                  let following = {}
+                  following.name = item.res.login
+                  following.htmlurl = item.res.html_url
+                  following.url = item.res.url
+                  following.count = item.followingsCount
+                  uniqueUserOneFollowings.push(following)
+                }
+              })
+              userTwoFollowings.map((item, index) => {
+                if (mutualFollowings.map(val => val.htmlurl).indexOf(item.res.html_url) === -1) {
+                  let following = {}
+                  following.name = item.res.login
+                  following.htmlurl = item.res.html_url
+                  following.url = item.res.url
+                  following.count = item.followingsCount
+                  uniqueUserTwoFollowings.push(following)
+                }
+              })
+
+              let followingsInfo = {
+                mutualFollowings,
+                userOneFollowings: uniqueUserOneFollowings,
+                userTwoFollowings: uniqueUserTwoFollowings
+              }
+
+              this.getFollowingsInfo(followingsInfo)
+              this.showSpinner = false
+            }
+          }.bind(this)
+          var followingsCheckerFlag = window.setInterval(isFollowingsFetchFinished, 300)
+        }
+
+      } else if (userOne === '' || userTwo === '') {
         if (userOne === '') {
           this.errorMessageFieldOne = 'Input Field should not be empty.'
         }

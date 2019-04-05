@@ -10,9 +10,13 @@ const state = {
 	mutualFollowers: [],
 	userOneFollowers: [],
 	userTwoFollowers: [],
-	mutualFollowing: [],
-	userOneFollowing: [],
-	userTwoFollowing: []
+	mutualFollowings: [],
+	userOneFollowings: [],
+	userTwoFollowings: [],
+	errorMessageFieldOne: '',
+	errorMessageFieldTwo: '',
+	flagOneStarsFetchFinished: false,
+  	flagTwoStarsFetchFinished: false
 }
 
 const getters = {
@@ -22,9 +26,13 @@ const getters = {
 	mutualFollowers: state => state.mutualFollowers,
 	userOneFollowers: state => state.userOneFollowers,
 	userTwoFollowers: state => state.userTwoFollowers,
-	mutualFollowing: state => state.mutualFollowing,
-	userOneFollowing: state => state.userOneFollowing,
-	userTwoFollowing: state => state.userTwoFollowing
+	mutualFollowings: state => state.mutualFollowings,
+	userOneFollowings: state => state.userOneFollowings,
+	userTwoFollowings: state => state.userTwoFollowings,
+	errorMessageFieldOne: state => state.errorMessageFieldOne,
+	errorMessageFieldTwo: state => state.errorMessageFieldTwo,
+	flagOneStarsFetchFinished: state => state.flagOneStarsFetchFinished,
+	flagTwoStarsFetchFinished: state => state.flagTwoStarsFetchFinished
 }
 
 const mutations = {
@@ -37,6 +45,11 @@ const mutations = {
 		state.mutualFollowers = obj.data.mutualFollowers
 		state.userOneFollowers = obj.data.userOneFollowers
 		state.userTwoFollowers = obj.data.userTwoFollowers
+	},
+	mutateFollowingsInfo (state, obj) {
+		state.mutualFollowings = obj.data.mutualFollowings
+		state.userOneFollowings = obj.data.userOneFollowings
+		state.userTwoFollowings = obj.data.userTwoFollowings
 	}
 }
 
@@ -46,6 +59,9 @@ const actions = {
 	},
 	getFollowersInfo ({ commit, state }, data) {
 		commit("mutateFollowersInfo", { data })
+	},
+	getFollowingsInfo ({ commit, state }, data) {
+		commit("mutateFollowingsInfo", { data })
 	}
 }
 
