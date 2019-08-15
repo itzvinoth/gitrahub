@@ -1,44 +1,20 @@
 <template>
   <div>
-    <!-- <div class="col-6 p-2 mx-auto border m-5">
-      <form>
-        <input class="form-control input-monospace input-block" type="text" placeholder="Github Access Token" aria-label="SHA">
-      </form>
-    </div> -->
-    <!-- <div class="select-menu js-menu-container js-select-menu">
-      <button class="btn select-menu-button js-menu-target" type="button" aria-haspopup="true" aria-expanded="false">
-        Choose an item
-      </button>
-      <div class="select-menu-modal-holder">
-        <div class="select-menu-modal js-menu-content" aria-expanded="false">
-          <div class="select-menu-list js-navigation-container">
-            <a href="#" class="select-menu-item selected js-navigation-item" aria-expanded="false">
-              <octicon name="check" class="select-menu-item-icon"></octicon>
-              <span class="select-menu-item-text js-select-button-text">Item 1</span>
-            </a>
-          </div>
-        </div>
-      </div>
-    </div> -->
     <div>
-      <!-- <date-picker range :format="format" :lang="'en'" :not-before="'2017-04-01'" :not-after="'2019-12-31'" placeholder="To date"></date-picker> -->
       <octicon name="mark-github" height="48" width="48" color="#95aebb"></octicon>
       <div class="mb-2">
-        <!-- <p class="h1"><span style="color: #95aebb">Git</span><span style="color: #1775d0">ra</span><span style="color: #95aebb">hub</span></p> -->
       </div>
     </div>
     <form>
       <div class="container-lg clearfix">
         <div class="col-6 float-left border p-6">
           <dl class="form-group errored">
-            <!-- vinothkumarrenganathan -->
             <dd><input class="form-control" type="text" v-model="inputone" placeholder="Enter github username or profile URL"></dd>
             <dd class="error" id="form-error-text" v-if="(errorMessageFieldOne !== undefined && errorMessageFieldOne !== '')"> {{ errorMessageFieldOne }} </dd>
           </dl>
         </div>
         <div class="col-6 float-left border p-6">
           <dl class="form-group errored">
-            <!-- Rafi993 -->
             <dd><input class="form-control" type="text" v-model="inputtwo" placeholder="Enter github username or profile URL"></dd>
             <dd class="error" id="form-error-text" v-if="(errorMessageFieldTwo !== undefined && errorMessageFieldTwo !== '')"> {{ errorMessageFieldTwo }} </dd>
           </dl>
@@ -52,13 +28,9 @@
     </div>
 
     <div class="container-lg clearfix">
-      <!-- today -->
       <nav class="UnderlineNav UnderlineNav--full" aria-label="Foo bar" v-if="((starsResult !== undefined && starsResult.length > 0) || (followersResult !== undefined && followersResult.length > 0))">
         <div class="container-lg UnderlineNav-container">
           <div class="UnderlineNav-body">
-            <!-- <a href="#" class="UnderlineNav-item">Stars
-              <span class="Counter">135</span>
-            </a> -->
             <a href="#" class="UnderlineNav-item" :class="{'selected': (index === tabSelectionIndex)}" v-for="(item, index) in items" :key="index" @click="onTabSelect(index, $event)">{{ item.message }}
             </a>
           </div>
@@ -262,7 +234,6 @@ import 'vue-octicon/icons/x'
 import 'vue-octicon/icons/info'
 import 'vue-octicon/icons/mark-github'
 import { intersection } from '../assets/js/intersection'
-// import DatePicker from '../assets/js/datepicker'
 import * as d3 from 'd3'
 import store from '../store'
 import { mapGetters, mapActions } from 'vuex'
