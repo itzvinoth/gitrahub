@@ -1,7 +1,9 @@
 <template>
   <div>
     <div>
-      <octicon name="mark-github" height="48" width="48" color="#95aebb"></octicon>
+      <a href="https://github.com/mevinoth/gitrahub" target="_blank" title="click to go github repo link">
+        <octicon name="mark-github" height="48" width="48" color="#95aebb"></octicon>
+      </a>
       <div class="mb-2">
       </div>
     </div>
