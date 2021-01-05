@@ -10,7 +10,7 @@
     "build": "node build/build.js"
   },
   "dependencies": {
-    "axios": "^0.18.0",
+    "axios": "^0.21.1",
     "css-loader": "^1.0.0",
     "d3": "^5.7.0",
     "primer": "^10.8.1",
